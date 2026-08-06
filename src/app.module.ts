@@ -3,8 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import mainConfig from './config/main.config';
 import telegramConfig from './config/telegram.config';
 import { HhModule } from './hh/hh.module';
-import { TelegramModule } from './telegram/telegram.module';
 import { LoggerModule } from './logger/logger.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -16,5 +16,6 @@ import { LoggerModule } from './logger/logger.module';
     }),
     LoggerModule,
   ],
+  // providers: [EntryService],
 })
 export class AppModule {}

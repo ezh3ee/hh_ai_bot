@@ -20,12 +20,15 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@crawlee/playwright": "^3.18.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
-    "cloakbrowser": "^0.5.4",
+    "cloakbrowser": "^0.5.5",
+    "crawlee": "^3.18.0",
     "grammy": "^1.45.1",
+    "playwright": "^1.62.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "zod": "^4.4.3"
@@ -73,9 +76,12 @@
     "testEnvironment": "node"
   },
   "allowScripts": {
-    "cloakbrowser@0.5.4": true,
     "grammy@1.45.1": true,
     "zod@4.4.3": true,
-    "@nestjs/config@4.0.4": true
+    "@nestjs/config@4.0.4": true,
+    "crawlee@3.18.0": true,
+    "cloakbrowser@0.5.5": true,
+    "playwright@1.62.1": true,
+    "@crawlee/playwright@3.18.0": true
   }
 }

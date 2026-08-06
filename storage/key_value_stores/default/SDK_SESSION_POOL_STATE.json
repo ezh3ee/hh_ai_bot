@@ -1,0 +1,92 @@
+{
+  "usableSessionsCount": 2,
+  "retiredSessionsCount": 0,
+  "sessions": [
+    {
+      "id": "session_0lGlaqJeKK",
+      "cookieJar": {
+        "version": "tough-cookie@6.0.2",
+        "storeType": "MemoryCookieStore",
+        "rejectPublicSuffixes": true,
+        "enableLooseMode": false,
+        "allowSpecialUseDomain": true,
+        "prefixSecurity": "silent",
+        "cookies": []
+      },
+      "userData": {},
+      "maxErrorScore": 3,
+      "errorScoreDecrement": 0.5,
+      "expiresAt": "2026-08-06T22:14:45.199Z",
+      "createdAt": "2026-08-06T21:24:45.199Z",
+      "usageCount": 0,
+      "maxUsageCount": 50,
+      "errorScore": 0
+    },
+    {
+      "id": "session_6KJUFYfF4O",
+      "cookieJar": {
+        "version": "tough-cookie@6.0.2",
+        "storeType": "MemoryCookieStore",
+        "rejectPublicSuffixes": true,
+        "enableLooseMode": false,
+        "allowSpecialUseDomain": true,
+        "prefixSecurity": "silent",
+        "cookies": [
+          {
+            "key": "__Secure-STRP",
+            "value": "ANmZwa0_KpW4ml21AaZd_PH-1eCS7umeP0Q65mQrEUPc4J9IU07nld6HqdfPbj2_edCPIUgWfdqOn6UwDs7nFcwgQX8x1mkqQp2S",
+            "expires": "2026-08-06T21:29:46.414Z",
+            "domain": "google.com",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2026-08-06T21:24:46.966Z",
+            "lastAccessed": "2026-08-06T21:24:46.966Z"
+          },
+          {
+            "key": "SEARCH_SAMESITE",
+            "value": "CgQIv6EB",
+            "expires": "2027-02-02T21:24:46.414Z",
+            "domain": "google.com",
+            "path": "/",
+            "hostOnly": false,
+            "creation": "2026-08-06T21:24:46.970Z",
+            "lastAccessed": "2026-08-06T21:24:46.970Z"
+          },
+          {
+            "key": "AEC",
+            "value": "AdJVEat0R0_lK5TnPW20oHbfgc4Tb2Otlp9PKn6x_TuMLES7aHbx-0oDeg",
+            "expires": "2027-02-02T21:24:46.414Z",
+            "domain": "google.com",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": false,
+            "creation": "2026-08-06T21:24:46.970Z",
+            "lastAccessed": "2026-08-06T21:24:46.970Z"
+          },
+          {
+            "key": "NID",
+            "value": "533=PoAjX2nxS4Mz1kYGPQwYgocN7PD6NecpjkHaKfXZCK0j7rnPqGrY1ii7qfEAoJ41kK6lyV39mJgRaSuuP2rN0eNZVAe_X-UqgnLdh2FDlcHw3_WkDu_HBQOJGQ-5I-y5XVfoMxSU5XDpP1-pBAKzY5XaAsri5DlUYBrEdcp0lG3zMH5Ai435G9-kkBHz5A9cRdSd-N8qlSFaH48Va03-jtWmaf-IPubazQk",
+            "expires": "2027-02-05T21:24:46.765Z",
+            "domain": "google.com",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": false,
+            "creation": "2026-08-06T21:24:46.970Z",
+            "lastAccessed": "2026-08-06T21:24:46.970Z"
+          }
+        ]
+      },
+      "userData": {},
+      "maxErrorScore": 3,
+      "errorScoreDecrement": 0.5,
+      "expiresAt": "2026-08-06T22:14:45.201Z",
+      "createdAt": "2026-08-06T21:24:45.201Z",
+      "usageCount": 1,
+      "maxUsageCount": 50,
+      "errorScore": 0
+    }
+  ]
+}
