@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PlaywrightCrawler } from 'crawlee';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class HhBrowserAutomationServiceTsService {
+  constructor(private readonly logger: LoggerService) {}
+
   async login() {
     const crawler = new PlaywrightCrawler({
       async requestHandler({ page, request, log }) {
@@ -14,7 +17,7 @@ export class HhBrowserAutomationServiceTsService {
 
       headless: false,
     });
-
-    await crawler.run(['https://hh.com']);
+    this.logger.log('Start crawling');
+    await crawler.run(['https://hh.ru']);
   }
 }
