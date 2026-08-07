@@ -8,8 +8,8 @@ export class LoggerService implements OnApplicationBootstrap {
     this.logger.log('The application graph is fully initialized.');
   }
 
-  log(message: string, context?: Record<string, any>) {
-    this.logger.log({ message, context });
+  log(message: string) {
+    this.logger.log(message);
   }
 
   warn(message: string, context?: Record<string, any>) {

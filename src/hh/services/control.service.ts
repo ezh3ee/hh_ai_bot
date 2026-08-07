@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from 'src/logger/logger.service';
-import { HhBrowserAutomationServiceTsService } from './hh-browser-automation.service.ts.service';
+import { HhBrowserAutomationServiceTsService } from './hh-browser-automation.service';
 
 @Injectable()
 export class ControlService {

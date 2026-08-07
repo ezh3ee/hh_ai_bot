@@ -19,5 +19,13 @@ export class HhBrowserAutomationServiceTsService {
     });
     this.logger.log('Start crawling');
     await crawler.run(['https://hh.ru']);
+
+    // Ждем нажатия Enter от пользователя
+    this.logger.log('Нажмите Enter как залогинитесь');
+    await new Promise<void>((resolve) =>
+      process.stdin.once('data', () => resolve()),
+    );
+
+    this.logger.log('Enter нажат');
   }
 }
