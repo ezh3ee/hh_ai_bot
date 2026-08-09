@@ -2,7 +2,7 @@ import { registerAs } from '@nestjs/config';
 import { z, ZodError } from 'zod';
 
 const mainConfigSchema = z.object({
-  TEST: z.string(),
+  HH_HEADLESS: z.coerce.boolean().default(false),
 });
 
 export type MainConfig = z.infer<typeof mainConfigSchema>;

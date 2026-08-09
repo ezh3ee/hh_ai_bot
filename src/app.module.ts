@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import hhElementsConfig from './config/hh.elements.config';
 import hhUrlConfig from './config/hh.url.config';
 import mainConfig from './config/main.config';
 import telegramConfig from './config/telegram.config';
@@ -13,7 +14,7 @@ import { TelegramModule } from './telegram/telegram.module';
     HhModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [mainConfig, telegramConfig, hhUrlConfig],
+      load: [mainConfig, telegramConfig, hhUrlConfig, hhElementsConfig],
     }),
     LoggerModule,
   ],

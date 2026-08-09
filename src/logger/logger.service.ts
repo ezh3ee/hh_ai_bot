@@ -19,8 +19,8 @@ export class LoggerService implements OnApplicationBootstrap {
   error(
     message: string,
     error?: Error | string,
-    // context?: Record<string, any>,
+    context?: Record<string, any>,
   ) {
-    this.logger.error({ error });
+    this.logger.error({ message, error, context: context });
   }
 }

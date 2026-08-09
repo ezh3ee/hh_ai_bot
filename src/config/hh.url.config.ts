@@ -7,7 +7,7 @@ const hhUrlConfigSchema = z.object({
 
 export type HhUrlConfig = z.infer<typeof hhUrlConfigSchema>;
 
-export default registerAs('app', (): HhUrlConfig => {
+export default registerAs('hhurl', (): HhUrlConfig => {
   let data: HhUrlConfig;
 
   try {
