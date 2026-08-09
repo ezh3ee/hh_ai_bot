@@ -1,0 +1,52 @@
+# Создайте файл settings.yml в корне проекта и заполните его
+# на примере этого файла
+# Обязательные поля помечены звездочкой (*)
+
+candidate:
+  name: 'Александр' # Ваше имя *
+  location: '' # Место проживания
+  desired_positions:
+    - 'Node Backend developer' # Желаемая должность
+  salary_expectation: '120000' # Зарплатные ожидания *
+  work_format: # Формат работы *
+    - 'REMOTE'
+    - 'HYBRID'
+    - 'ON_SITE'
+  excluded_positions: # Исключенные должности
+    - 'Frontend developer'
+  projects: # Проекты
+    telegram_video_downloader:
+      name: 'Telegram-бот для скачивания видео'
+      role: 'Backend developer'
+      period: 'Июнь 2026 — по настоящее время'
+      type: 'Личный проект'
+      url: 'https://github.com/qqq/telegram-video-downloader'
+      stack:
+        - 'Node.js'
+        - 'TypeScript'
+      description: >
+        Это личный проект, на который я работаю в команде с продакшенами.
+        Он предназначен для скачивания видео из Telegram в формате MP4.
+  experience_summary: > # Ваше резюме *
+    Я backend-разработчик с опытом на Node.js, с двухлетним стажем
+    и опытом работы в команде с продакшенами на различных платформах.
+
+hh:
+  resume_name: 'Backend-developer' # Точное название резюме *
+  search_queries: # Поисковые запросы *
+    - 'Node backend'
+    - 'Node.js backend'
+  areas: # Регион работы *
+    - '1' # Москва
+    - '113' # Россия
+  stop_words: # Слова, которые не должны присутствовать в вакансии *
+    - 'Senior'
+    - 'Сеньор'
+
+ai_instructions:
+  is_suitable: > # Инструкция для AI, подходит ли вакансия *
+    Твоя задача — оценить, подходит ли вакансия под мои критерии поиска,
+
+  cover_letter:
+    > # Инструкция для AI, как написать короткий краткий лист о вакансии *
+    Напиши сопроводительное письмо для отклика на вакансию.

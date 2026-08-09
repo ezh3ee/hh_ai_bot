@@ -73,3 +73,6 @@ opencode.json
 
 # playwrite
 session.json
+
+# yml settings
+settings.yml
