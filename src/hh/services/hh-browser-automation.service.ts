@@ -1,13 +1,14 @@
 import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { Browser, BrowserContext, Page } from 'playwright';
+import hhElementsConfig from '../../config/hh.elements.config';
 import hhUrlConfig from '../../config/hh.url.config';
 import mainConfig from '../../config/main.config';
 import { LoggerService } from '../../logger/logger.service';
 import { SessionService } from './session.service';
 
 @Injectable()
-export class HhBrowserAutomationServiceTsService implements OnModuleDestroy {
+export class HhBrowserAutomationService implements OnModuleDestroy {
   private browser: Browser | null = null;
   private context: BrowserContext | null = null;
 
@@ -16,6 +17,8 @@ export class HhBrowserAutomationServiceTsService implements OnModuleDestroy {
     private readonly urlConfig: ConfigType<typeof hhUrlConfig>,
     @Inject(mainConfig.KEY)
     private readonly appConfig: ConfigType<typeof mainConfig>,
+    @Inject(hhElementsConfig.KEY)
+    private readonly elementConfig: ConfigType<typeof hhElementsConfig>,
     private readonly logger: LoggerService,
     private readonly sessionService: SessionService,
   ) {}
@@ -88,7 +91,8 @@ export class HhBrowserAutomationServiceTsService implements OnModuleDestroy {
     }
 
     const accountPanel = page.locator(
-      '[data-qa="applicantProfileDesktopDrop-button"], [data-qa="applicantProfilePage-button"]',
+      `${this.elementConfig.HH_PROFILE_ICON_DESKTOP},
+      ${this.elementConfig.HH_PROFILE_ICON_MOBILE}`,
     );
 
     return (await accountPanel.count()) > 0;

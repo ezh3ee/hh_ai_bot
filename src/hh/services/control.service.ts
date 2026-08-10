@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../../logger/logger.service';
-import { HhBrowserAutomationServiceTsService } from './hh-browser-automation.service';
+import { HhBrowserAutomationService } from './hh-browser-automation.service';
 
 @Injectable()
 export class ControlService {
   constructor(
     private readonly logger: LoggerService,
-    private readonly browserAutomationService: HhBrowserAutomationServiceTsService,
+    private readonly browserAutomationService: HhBrowserAutomationService,
   ) {}
 
   async initAndRun() {

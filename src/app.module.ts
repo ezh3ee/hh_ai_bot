@@ -18,6 +18,5 @@ import { TelegramModule } from './telegram/telegram.module';
     }),
     LoggerModule,
   ],
-  // providers: [EntryService],
 })
 export class AppModule {}
