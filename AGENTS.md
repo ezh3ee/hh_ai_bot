@@ -14,3 +14,18 @@
 - When investigating a task, first inspect only files directly related to it.
 - Avoid broad repository-wide searches unless necessary.
 - DO not read .env files
+
+## Git-воркфлоу (обязательно если говорою "залей/запушь/закоммить на github")
+
+- Никогда не коммить в main.
+- Под задачу создай ветку: git checkout -b ai/КОРОТКОЕ-ИМЯ-ЗАДАЧИ
+- Перед коммитом запусти: npx tsc --noEmit -p tsconfig.build.json и npx eslint "src/**/*.ts". Если красное — чини до коммита.
+- Коммить с подписью бота:
+  git -c user.name="Opencode" -c user.email="opencode@agents.local" commit -m "{ЧТО СДЕЛАЛ}"
+- git push -u origin ai/ИМЯ или head
+- gh pr create --title "{ЧТО СДЕЛАЛ}" --body "{Коротко: что изменено и зачем}"
+- НЕ нажимай merge. Жди моего решения.
+- Если я говорю «почини комменты на PR N»:
+  1. gh pr view N --comments
+  2. gh api repos/ТВОЙ_ЛОГИН/hh-ai-bot/pulls/N/comments
+     Прочитай оба вывода, исправь всё в той же ветке, закоммить, запушь. PR обновится сам.
