@@ -7,11 +7,11 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig(
   globalIgnores(['.config/*']),
+  { ignores: ['eslint.config.mjs', 'src/generated/**'] },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   {
-    ignores: ['eslint.config.mjs', 'src/generated/**'],
     languageOptions: {
       globals: {
         ...globals.node,
