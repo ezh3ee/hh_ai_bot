@@ -80,3 +80,6 @@ settings.yml
 
 # prisma
 src/generated/prisma
+
+# AI
+.agents
