@@ -6,7 +6,7 @@ import mainConfig from './config/main.config';
 import telegramConfig from './config/telegram.config';
 import { HhModule } from './hh/hh.module';
 import { LoggerModule } from './logger/logger.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { PrismaService } from './prisma/prisma.service';
 import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
@@ -18,8 +18,7 @@ import { TelegramModule } from './telegram/telegram.module';
       load: [mainConfig, telegramConfig, hhUrlConfig, hhElementsConfig],
     }),
     LoggerModule,
-    PrismaModule,
   ],
-  // providers: [PrismaService],
+  providers: [PrismaService],
 })
 export class AppModule {}
