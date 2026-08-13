@@ -11,7 +11,7 @@ export default defineConfig(
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   {
-    ignores: ['eslint.config.mjs', 'src/generated/*.ts'],
+    ignores: ['eslint.config.mjs', 'src/generated/**'],
     languageOptions: {
       globals: {
         ...globals.node,
