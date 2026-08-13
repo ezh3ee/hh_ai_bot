@@ -77,3 +77,6 @@ session.json
 
 # yml settings
 settings.yml
+
+# prisma
+src/generated/prisma

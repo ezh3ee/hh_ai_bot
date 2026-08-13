@@ -25,6 +25,8 @@
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@prisma/adapter-better-sqlite3": "^7.9.1",
+    "@prisma/client": "^7.9.1",
     "cloakbrowser": "^0.5.5",
     "grammy": "^1.45.1",
     "playwright": "^1.62.1",
@@ -38,23 +40,27 @@
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.0.0",
+    "@types/node": "^24.13.3",
     "@types/supertest": "^7.0.0",
+    "dotenv": "^17.4.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^17.0.0",
     "jest": "^30.0.0",
     "prettier": "^3.4.2",
+    "prisma": "^7.9.1",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
@@ -79,6 +85,26 @@
     "zod@4.4.3": true,
     "@nestjs/config@4.0.4": true,
     "cloakbrowser@0.5.5": true,
-    "playwright@1.62.1": true
+    "playwright@1.62.1": true,
+    "typescript@5.9.3": true,
+    "tsx@4.23.12": true,
+    "@types/node@24.13.3": true,
+    "@types/better-sqlite3@9.6.0": true,
+    "@prisma/client@7.9.1": true,
+    "@prisma/adapter-better-sqlite3@7.9.1": true,
+    "dotenv@17.4.1": true,
+    "dotenv@17.4.2": true,
+    "dotenv@16.6.1": true,
+    "@prisma/engines@7.9.1": true,
+    "better-sqlite3@12.11.1": true,
+    "esbuild@0.28.2": true,
+    "prisma@7.9.1": true,
+    "unrs-resolver@1.12.2": true
+  },
+  "overrides": {
+    "@grammyjs/nestjs": {
+      "@nestjs/common": "$@nestjs/common",
+      "@nestjs/core": "$@nestjs/core"
+    }
   }
 }
