@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
-  SettingsConfig,
+  AiInstructionsConfig,
   CandidateConfig,
   HhConfig,
-  AiInstructionsConfig,
   ProjectConfig,
+  SettingsConfig,
 } from './settings.schema';
 
 @Injectable()
