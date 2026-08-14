@@ -3,36 +3,8 @@ import { OpenAI } from 'openai';
 import type { ConfigType } from '@nestjs/config';
 import llmConfig from '../config/llm.config';
 import { LoggerService } from '../logger/logger.service';
-
-export interface Vacancy {
-  id: string;
-  title: string;
-  company: string;
-  description: string;
-  url: string;
-  salary?: string;
-  location?: string;
-}
-
-export interface Candidate {
-  name: string;
-  desired_positions: string[];
-  salary_expectation: string;
-  work_format: string[];
-  experience_summary: string;
-  projects?: Record<
-    string,
-    {
-      name: string;
-      role: string;
-      period: string;
-      type: string;
-      url: string;
-      stack: string[];
-      description: string;
-    }
-  >;
-}
+import { SettingsConfigService } from '../config/settings/settings-config.service';
+import { Vacancy, Candidate } from './llm.types';
 
 @Injectable()
 export class LLMService implements OnModuleInit {
@@ -46,6 +18,7 @@ export class LLMService implements OnModuleInit {
     @Inject(llmConfig.KEY)
     private readonly config: ConfigType<typeof llmConfig>,
     private readonly logger: LoggerService,
+    private readonly settings: SettingsConfigService,
   ) {}
 
   onModuleInit() {
@@ -205,23 +178,15 @@ export class LLMService implements OnModuleInit {
   }
 
   private buildAnalysisPrompt(vacancyText: string): string {
-    return `Ты — эксперт по подбору вакансий. Проанализируй вакансию и реши, подходит ли она кандидату.
-
-КРИТЕРИИ КАНДИДАТА:
-- Backend разработчик на Node.js/TypeScript
-- Опыт 2+ года
-- Не подходят: Senior/Lead/Architect, чистый Frontend, не Node.js стек, менеджмент
-
-ВАКАНСИЯ:
-${vacancyText}
-
-Ответь ТОЛКО одним словом: YES или NO`;
+    const basePrompt = this.settings.aiInstructions.is_suitable;
+    return `${basePrompt}\n\nВАКАНСИЯ:\n${vacancyText}\n\nОтветь ТОЛ��КО одним словом: YES или NO`;
   }
 
   private buildCoverLetterPrompt(
     vacancy: Vacancy,
     candidate: Candidate,
   ): string {
+    const basePrompt = this.settings.aiInstructions.cover_letter;
     const projects = candidate.projects
       ? Object.values(candidate.projects)
           .map(
@@ -230,32 +195,6 @@ ${vacancyText}
           .join('\n')
       : 'Нет проектов';
 
-    return `Напиши сопроводительное письмо для отклика на вакансию.
-
-ВАКАНСИЯ:
-Название: ${vacancy.title}
-Компания: ${vacancy.company}
-Описание: ${vacancy.description}
-Зарплата: ${vacancy.salary || 'не указана'}
-Локация: ${vacancy.location || 'не указана'}
-
-КАНДИДАТ:
-Имя: ${candidate.name}
-Желаемые позиции: ${candidate.desired_positions.join(', ')}
-Зарплатные ожидания: ${candidate.salary_expectation}
-Формат работы: ${candidate.work_format.join(', ')}
-Резюме: ${candidate.experience_summary}
-
-ПРОЕКТ��:
-${projects}
-
-ПРАВИЛА:
-- Пиши на русском языке
-- 3-4 абзаца
-- Живой, спокойный, уверенный стиль
-- Упоминай релевантный стек под вакансию
-- Если проект пересекается с темой вакансии — укажи его и ссылку
-- Подпись в конце: ${candidate.name}
-- Без markdown, без вводных фраз, только текст письма`;
+    return `${basePrompt}\n\nВАКАНСИЯ:\nНазвание: ${vacancy.title}\nКомпания: ${vacancy.company}\nОписание: ${vacancy.description}\nЗарплата: ${vacancy.salary || 'не указана'}\nЛокация: ${vacancy.location || 'не указана'}\n\nКАНДИДАТ:\nИмя: ${candidate.name}\nЖелаемые позиции: ${candidate.desired_positions.join(', ')}\nЗарплатные ожидания: ${candidate.salary_expectation}\nФормат работы: ${candidate.work_format.join(', ')}\nРезюме: ${candidate.experience_summary}\n\nПРОЕКТ��:\n${projects}`;
   }
 }
