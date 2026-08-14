@@ -1,42 +1,37 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
+import settingsConfig from './settings.config';
 import {
   AiInstructionsConfig,
   CandidateConfig,
   HhConfig,
   ProjectConfig,
-  SettingsConfig,
 } from './settings.schema';
 
 @Injectable()
 export class SettingsConfigService {
-  constructor(private readonly config: ConfigService) {}
-
-  private get<T>(key: keyof SettingsConfig): T {
-    const value = this.config.get<T>(`settings.${key}`);
-    if (!value) {
-      throw new Error(`Settings.${key} not loaded`);
-    }
-    return value;
-  }
+  constructor(
+    @Inject(settingsConfig.KEY)
+    private readonly settings: ConfigType<typeof settingsConfig>,
+  ) {}
 
   get candidate(): CandidateConfig {
-    return this.get('candidate');
+    return this.settings.candidate;
   }
 
   get hh(): HhConfig {
-    return this.get('hh');
+    return this.settings.hh;
   }
 
   get aiInstructions(): AiInstructionsConfig {
-    return this.get('ai_instructions');
+    return this.settings.ai_instructions;
   }
 
   getProjects(): Record<string, ProjectConfig> {
-    return (this.candidate.projects as Record<string, ProjectConfig>) ?? {};
+    return this.settings.candidate.projects ?? {};
   }
 
   getProject(key: string): ProjectConfig | undefined {
-    return this.candidate.projects?.[key];
+    return this.settings.candidate.projects?.[key];
   }
 }
