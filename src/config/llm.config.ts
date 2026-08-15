@@ -54,29 +54,6 @@ export const llmConfigSchema = z.discriminatedUnion('LLM_PROVIDER', [
 
 export type LlmConfig = z.infer<typeof llmConfigSchema>;
 
-// Internal config type with all possible properties for use in providers
-// This avoids TypeScript narrowing issues with discriminated unions in certain contexts
-export interface LlmConfigInternal {
-  LLM_PROVIDER: 'ollama' | 'openrouter' | 'polza' | 'openai-compatible';
-  OLLAMA_BASE_URL?: string;
-  OLLAMA_MODEL?: string;
-  OPENROUTER_API_KEY?: string;
-  OPENROUTER_BASE_URL?: string;
-  OPENROUTER_MODEL?: string;
-  POLZA_API_KEY?: string;
-  POLZA_BASE_URL?: string;
-  POLZA_MODEL?: string;
-  OPENAI_COMPATIBLE_API_KEY?: string;
-  OPENAI_COMPATIBLE_BASE_URL?: string;
-  OPENAI_COMPATIBLE_MODEL?: string;
-  LLM_TEMPERATURE_ANALYSIS?: number;
-  LLM_TEMPERATURE_COVER_LETTER?: number;
-  LLM_MAX_TOKENS_ANALYSIS?: number;
-  LLM_MAX_TOKENS_COVER_LETTER?: number;
-  LLM_TIMEOUT_MS: number;
-  LLM_MAX_RETRIES: number;
-}
-
 export default registerAs('llm', (): LlmConfig => {
   let data: LlmConfig;
   try {

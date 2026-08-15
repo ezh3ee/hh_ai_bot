@@ -1,39 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { OpenAI } from 'openai';
-import {
-  BaseLLMProvider,
-  AskOptions,
-} from '../interfaces/llm-provider.interface';
-import type { LlmConfigInternal } from '../../config/llm.config';
+import llmConfig from '../../config/llm.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
 import { LoggerService } from '../../logger/logger.service';
+import {
+  AskOptions,
+  BaseLLMProvider,
+} from '../interfaces/llm-provider.interface';
 
 @Injectable()
 export class OpenAICompatibleProvider extends BaseLLMProvider {
   private client: OpenAI | null = null;
 
   constructor(
-    config: LlmConfigInternal,
+    @Inject(llmConfig.KEY)
+    config: ConfigType<typeof llmConfig>,
     settings: SettingsConfigService,
     logger: LoggerService,
   ) {
     super(config, settings, logger);
   }
 
-  configure(config: LlmConfigInternal): this {
-    const baseURL =
-      config.OPENROUTER_BASE_URL ??
-      config.POLZA_BASE_URL ??
-      config.OPENAI_COMPATIBLE_BASE_URL;
-    const apiKey =
-      config.OPENROUTER_API_KEY ??
-      config.POLZA_API_KEY ??
-      config.OPENAI_COMPATIBLE_API_KEY;
+  configure(config: ConfigType<typeof llmConfig>): this {
+    // Cast to access all possible properties regardless of discriminated union narrowing
+    const cfg = config as Record<string, unknown>;
+    const baseURL = (cfg.OPENROUTER_BASE_URL ??
+      cfg.POLZA_BASE_URL ??
+      cfg.OPENAI_COMPATIBLE_BASE_URL) as string;
+    const apiKey = (cfg.OPENROUTER_API_KEY ??
+      cfg.POLZA_API_KEY ??
+      cfg.OPENAI_COMPATIBLE_API_KEY) as string;
 
     this.client = new OpenAI({
       baseURL,
       apiKey,
-      timeout: config.LLM_TIMEOUT_MS ?? 60000,
+      timeout: this.config.LLM_TIMEOUT_MS ?? 60000,
     });
     return this;
   }
@@ -58,16 +60,17 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
   }
 
   private getModel(): string {
-    const cfg = this.config;
-    switch (cfg.LLM_PROVIDER) {
+    const cfg = this.config as Record<string, unknown>;
+    const provider = this.config.LLM_PROVIDER;
+    switch (provider) {
       case 'openrouter':
-        return cfg.OPENROUTER_MODEL!;
+        return cfg.OPENROUTER_MODEL as string;
       case 'polza':
-        return cfg.POLZA_MODEL!;
+        return cfg.POLZA_MODEL as string;
       case 'openai-compatible':
-        return cfg.OPENAI_COMPATIBLE_MODEL!;
+        return cfg.OPENAI_COMPATIBLE_MODEL as string;
       default:
-        return cfg.OPENROUTER_MODEL!;
+        return cfg.OPENROUTER_MODEL as string;
     }
   }
 }

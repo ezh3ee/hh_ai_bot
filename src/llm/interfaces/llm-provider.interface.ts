@@ -1,4 +1,5 @@
-import { LlmConfigInternal } from '../../config/llm.config';
+import type { ConfigType } from '@nestjs/config';
+import llmConfig from '../../config/llm.config';
 import { Vacancy, Candidate } from '../llm.types';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
 import { LoggerService } from '../../logger/logger.service';
@@ -8,9 +9,11 @@ export interface AskOptions {
   maxTokens?: number;
 }
 
+export type LlmProviderConfig = ConfigType<typeof llmConfig>;
+
 export abstract class BaseLLMProvider {
   constructor(
-    protected readonly config: LlmConfigInternal,
+    protected readonly config: LlmProviderConfig,
     protected readonly settings: SettingsConfigService,
     protected readonly logger: LoggerService,
   ) {}

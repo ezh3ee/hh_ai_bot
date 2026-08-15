@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import {
-  BaseLLMProvider,
-  AskOptions,
-} from '../interfaces/llm-provider.interface';
-import type { LlmConfigInternal } from '../../config/llm.config';
+import { Inject, Injectable } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
+import llmConfig from '../../config/llm.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
 import { LoggerService } from '../../logger/logger.service';
+import {
+  AskOptions,
+  BaseLLMProvider,
+} from '../interfaces/llm-provider.interface';
+
+type OllamaConfig = ConfigType<typeof llmConfig> & { LLM_PROVIDER: 'ollama' };
 
 @Injectable()
 export class OllamaProvider extends BaseLLMProvider {
@@ -13,13 +16,15 @@ export class OllamaProvider extends BaseLLMProvider {
   private readonly model: string;
 
   constructor(
-    config: LlmConfigInternal,
+    @Inject(llmConfig.KEY)
+    config: ConfigType<typeof llmConfig>,
     settings: SettingsConfigService,
     logger: LoggerService,
   ) {
     super(config, settings, logger);
-    this.url = config.OLLAMA_BASE_URL!;
-    this.model = config.OLLAMA_MODEL!;
+    const ollamaConfig = config as OllamaConfig;
+    this.url = ollamaConfig.OLLAMA_BASE_URL;
+    this.model = ollamaConfig.OLLAMA_MODEL;
   }
 
   async ask(prompt: string, options?: AskOptions): Promise<string> {

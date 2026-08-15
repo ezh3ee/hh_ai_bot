@@ -6,7 +6,6 @@ import { OpenAICompatibleProvider } from './providers/openai-compatible.provider
 import { SettingsConfigService } from '../config/settings/settings-config.service';
 import { LoggerService } from '../logger/logger.service';
 import { BaseLLMProvider } from './interfaces/llm-provider.interface';
-import { LlmConfigInternal } from '../config/llm.config';
 
 @Injectable()
 export class LLMFactory {
@@ -20,7 +19,7 @@ export class LLMFactory {
   ) {}
 
   create(): BaseLLMProvider {
-    const cfg = this.config as LlmConfigInternal;
+    const cfg = this.config;
     const provider = cfg.LLM_PROVIDER;
     switch (provider) {
       case 'ollama':
@@ -40,15 +39,15 @@ export class LLMFactory {
     }
   }
 
-  private getModelName(cfg: LlmConfigInternal): string {
+  private getModelName(cfg: ConfigType<typeof llmConfig>): string {
     const provider = cfg.LLM_PROVIDER;
     switch (provider) {
       case 'openrouter':
-        return cfg.OPENROUTER_MODEL!;
+        return cfg.OPENROUTER_MODEL;
       case 'polza':
-        return cfg.POLZA_MODEL!;
+        return cfg.POLZA_MODEL;
       case 'openai-compatible':
-        return cfg.OPENAI_COMPATIBLE_MODEL!;
+        return cfg.OPENAI_COMPATIBLE_MODEL;
       default:
         return 'unknown';
     }
