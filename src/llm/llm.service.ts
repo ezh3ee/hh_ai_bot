@@ -1,10 +1,10 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { OpenAI } from 'openai';
 import type { ConfigType } from '@nestjs/config';
+import { OpenAI } from 'openai';
 import llmConfig from '../config/llm.config';
-import { LoggerService } from '../logger/logger.service';
 import { SettingsConfigService } from '../config/settings/settings-config.service';
-import { Vacancy, Candidate } from './llm.types';
+import { LoggerService } from '../logger/logger.service';
+import { Candidate, Vacancy } from './llm.types';
 
 @Injectable()
 export class LLMService implements OnModuleInit {
@@ -108,10 +108,8 @@ export class LLMService implements OnModuleInit {
           messages: [{ role: 'user', content: prompt }],
           stream: false,
           options: {
-            temperature:
-              options?.temperature ?? this.config.LLM_TEMPERATURE_ANALYSIS,
-            num_predict:
-              options?.maxTokens ?? this.config.LLM_MAX_TOKENS_ANALYSIS,
+            temperature: options?.temperature,
+            num_predict: options?.maxTokens,
           },
         }),
         signal: controller.signal,
@@ -136,8 +134,8 @@ export class LLMService implements OnModuleInit {
     const completion = await this.openaiClient.chat.completions.create({
       model: this.openaiModel,
       messages: [{ role: 'user', content: prompt }],
-      temperature: options?.temperature ?? this.config.LLM_TEMPERATURE_ANALYSIS,
-      max_tokens: options?.maxTokens ?? this.config.LLM_MAX_TOKENS_ANALYSIS,
+      temperature: options?.temperature,
+      max_tokens: options?.maxTokens,
     });
     return completion.choices[0]?.message?.content ?? '';
   }
@@ -179,7 +177,7 @@ export class LLMService implements OnModuleInit {
 
   private buildAnalysisPrompt(vacancyText: string): string {
     const basePrompt = this.settings.aiInstructions.is_suitable;
-    return `${basePrompt}\n\nВАКАНСИЯ:\n${vacancyText}\n\nОтветь ТОЛ��КО одним словом: YES или NO`;
+    return `${basePrompt}\n\nВАКАНСИЯ:\n${vacancyText}`;
   }
 
   private buildCoverLetterPrompt(
@@ -195,6 +193,6 @@ export class LLMService implements OnModuleInit {
           .join('\n')
       : 'Нет проектов';
 
-    return `${basePrompt}\n\nВАКАНСИЯ:\nНазвание: ${vacancy.title}\nКомпания: ${vacancy.company}\nОписание: ${vacancy.description}\nЗарплата: ${vacancy.salary || 'не указана'}\nЛокация: ${vacancy.location || 'не указана'}\n\nКАНДИДАТ:\nИмя: ${candidate.name}\nЖелаемые позиции: ${candidate.desired_positions.join(', ')}\nЗарплатные ожидания: ${candidate.salary_expectation}\nФормат работы: ${candidate.work_format.join(', ')}\nРезюме: ${candidate.experience_summary}\n\nПРОЕКТ��:\n${projects}`;
+    return `${basePrompt}\n\nВАКАНСИЯ:\nНазвание: ${vacancy.title}\nОписание: ${vacancy.description}\nРезюме: ${candidate.experience_summary}\n\nМОИ ПРОЕКТЫ:\n${projects}`;
   }
 }

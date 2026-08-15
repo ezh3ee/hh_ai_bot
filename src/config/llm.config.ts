@@ -12,28 +12,25 @@ const llmConfigSchema = z
   .object({
     LLM_PROVIDER: LlmProviderEnum.default('ollama'),
 
-    OLLAMA_BASE_URL: z.string().url().default('http://localhost:11434'),
-    OLLAMA_MODEL: z.string().default('llama3.1:8b'),
+    OLLAMA_BASE_URL: z.url().default('http://localhost:11434'),
+    OLLAMA_MODEL: z.string(),
 
     OPENROUTER_API_KEY: z.string().optional(),
-    OPENROUTER_BASE_URL: z
-      .string()
-      .url()
-      .default('https://openrouter.ai/api/v1'),
+    OPENROUTER_BASE_URL: z.url().default('https://openrouter.ai/api/v1'),
     OPENROUTER_MODEL: z.string().default('anthropic/claude-3.5-sonnet'),
 
     POLZA_API_KEY: z.string().optional(),
-    POLZA_BASE_URL: z.string().url().default('https://api.polza.ai/v1'),
+    POLZA_BASE_URL: z.url().default('https://api.polza.ai/v1'),
     POLZA_MODEL: z.string().default('gpt-4o-mini'),
 
     OPENAI_COMPATIBLE_API_KEY: z.string().optional(),
-    OPENAI_COMPATIBLE_BASE_URL: z.string().url().optional(),
+    OPENAI_COMPATIBLE_BASE_URL: z.url().optional(),
     OPENAI_COMPATIBLE_MODEL: z.string().optional(),
 
-    LLM_TEMPERATURE_ANALYSIS: z.coerce.number().min(0).max(2).default(0.1),
-    LLM_TEMPERATURE_COVER_LETTER: z.coerce.number().min(0).max(2).default(0.4),
-    LLM_MAX_TOKENS_ANALYSIS: z.coerce.number().positive().default(20),
-    LLM_MAX_TOKENS_COVER_LETTER: z.coerce.number().positive().default(2000),
+    LLM_TEMPERATURE_ANALYSIS: z.coerce.number().min(0).max(2).optional(),
+    LLM_TEMPERATURE_COVER_LETTER: z.coerce.number().min(0).max(2).optional(),
+    LLM_MAX_TOKENS_ANALYSIS: z.coerce.number().positive().optional(),
+    LLM_MAX_TOKENS_COVER_LETTER: z.coerce.number().positive().optional(),
     LLM_TIMEOUT_MS: z.coerce.number().positive().default(60000),
     LLM_MAX_RETRIES: z.coerce.number().int().positive().default(3),
   })

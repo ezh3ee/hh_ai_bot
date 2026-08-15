@@ -4,6 +4,7 @@ import { Browser, BrowserContext, Page } from 'playwright';
 import hhElementsConfig from '../../config/hh.elements.config';
 import hhUrlConfig from '../../config/hh.url.config';
 import mainConfig from '../../config/main.config';
+import { LLMService } from '../../llm/llm.service';
 import { LoggerService } from '../../logger/logger.service';
 import { SessionService } from './session.service';
 
@@ -21,6 +22,7 @@ export class HhBrowserAutomationService implements OnModuleDestroy {
     private readonly elementConfig: ConfigType<typeof hhElementsConfig>,
     private readonly logger: LoggerService,
     private readonly sessionService: SessionService,
+    private readonly llmService: LLMService,
   ) {}
 
   async login(): Promise<void> {
