@@ -8,7 +8,7 @@ import { Vacancy, Candidate } from './llm.types';
 
 @Injectable()
 export class LLMService implements OnModuleInit {
-  private provider: BaseLLMProvider;
+  private provider!: BaseLLMProvider;
 
   constructor(private readonly factory: LLMFactory) {}
 
