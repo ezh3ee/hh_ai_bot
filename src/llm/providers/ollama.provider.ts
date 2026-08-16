@@ -7,6 +7,7 @@ import {
   AskOptions,
   BaseLLMProvider,
 } from '../interfaces/llm-provider.interface';
+import { isOllamaChatResponse } from '../ollama-response.schema';
 
 @Injectable()
 export class OllamaProvider extends BaseLLMProvider {
@@ -58,8 +59,18 @@ export class OllamaProvider extends BaseLLMProvider {
         throw new Error(`Ollama HTTP ${res.status}: ${errorText}`);
       }
 
-      const data = (await res.json()) as { message?: { content?: string } };
-      return data.message?.content ?? '';
+      const data: unknown = await res.json();
+
+      if (!isOllamaChatResponse(data)) {
+        this.logger.error(
+          'Invalid Ollama response structure',
+          new Error('Zod validation failed'),
+          { response: data },
+        );
+        throw new Error('Invalid Ollama API response structure');
+      }
+
+      return data.message.content ?? '';
     } finally {
       clearTimeout(timeoutId);
     }
