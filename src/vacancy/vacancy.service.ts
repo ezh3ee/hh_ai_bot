@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, PrismaClient, Vacancy } from '../generated/prisma/client';
+import { Prisma, Vacancy } from '../generated/prisma/client';
 import { LoggerService } from '../logger/logger.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateVacancyDto } from './dto/create-vacancy.dto';
 
 @Injectable()
 export class VacancyService {
   constructor(
-    private readonly prisma: PrismaClient,
+    private readonly prisma: PrismaService,
     private readonly logger: LoggerService,
   ) {}
 

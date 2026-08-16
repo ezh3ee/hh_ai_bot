@@ -10,7 +10,6 @@ import telegramConfig from './config/telegram.config';
 import { HhModule } from './hh/hh.module';
 import { LlmModule } from './llm/llm.module';
 import { LoggerModule } from './logger/logger.module';
-import { PrismaService } from './prisma/prisma.service';
 import { TelegramModule } from './telegram/telegram.module';
 import { VacancyModule } from './vacancy/vacancy.module';
 
@@ -33,6 +32,6 @@ import { VacancyModule } from './vacancy/vacancy.module';
     LoggerModule,
     VacancyModule,
   ],
-  providers: [PrismaService, SettingsConfigService],
+  providers: [SettingsConfigService],
 })
 export class AppModule {}
