@@ -8,8 +8,6 @@ import {
   BaseLLMProvider,
 } from '../interfaces/llm-provider.interface';
 
-type OllamaConfig = ConfigType<typeof llmConfig> & { LLM_PROVIDER: 'ollama' };
-
 @Injectable()
 export class OllamaProvider extends BaseLLMProvider {
   private readonly url: string;
@@ -22,7 +20,10 @@ export class OllamaProvider extends BaseLLMProvider {
     logger: LoggerService,
   ) {
     super(config, settings, logger);
-    const ollamaConfig = config as OllamaConfig;
+    if (config.LLM_PROVIDER !== 'ollama') {
+      throw new Error('OllamaProvider requires LLM_PROVIDER=ollama');
+    }
+    const ollamaConfig = config;
     this.url = ollamaConfig.OLLAMA_BASE_URL;
     this.model = ollamaConfig.OLLAMA_MODEL;
   }
@@ -31,7 +32,7 @@ export class OllamaProvider extends BaseLLMProvider {
     const controller = new AbortController();
     const timeoutId = setTimeout(
       () => controller.abort(),
-      this.config.LLM_TIMEOUT_MS ?? 60000,
+      this.config.LLM_TIMEOUT_MS,
     );
 
     try {
@@ -44,11 +45,9 @@ export class OllamaProvider extends BaseLLMProvider {
           stream: false,
           options: {
             temperature:
-              options?.temperature ??
-              this.config.LLM_TEMPERATURE_ANALYSIS ??
-              0.1,
+              options?.temperature ?? this.config.LLM_TEMPERATURE_ANALYSIS,
             num_predict:
-              options?.maxTokens ?? this.config.LLM_MAX_TOKENS_ANALYSIS ?? 20,
+              options?.maxTokens ?? this.config.LLM_MAX_TOKENS_ANALYSIS,
           },
         }),
         signal: controller.signal,

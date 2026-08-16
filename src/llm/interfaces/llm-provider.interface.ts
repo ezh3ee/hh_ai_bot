@@ -24,10 +24,15 @@ export abstract class BaseLLMProvider {
     const prompt = this.buildAnalysisPrompt(text);
 
     for (let i = 1; i <= (this.config.LLM_MAX_RETRIES ?? 3); i++) {
-      const answer = await this.ask(prompt, {
-        temperature: this.config.LLM_TEMPERATURE_ANALYSIS ?? 0.1,
-        maxTokens: this.config.LLM_MAX_TOKENS_ANALYSIS ?? 20,
-      });
+      const askOptions: AskOptions = {};
+      if (this.config.LLM_TEMPERATURE_ANALYSIS !== undefined) {
+        askOptions.temperature = this.config.LLM_TEMPERATURE_ANALYSIS;
+      }
+      if (this.config.LLM_MAX_TOKENS_ANALYSIS !== undefined) {
+        askOptions.maxTokens = this.config.LLM_MAX_TOKENS_ANALYSIS;
+      }
+
+      const answer = await this.ask(prompt, askOptions);
 
       const cleaned = answer.trim().toUpperCase();
       if (cleaned === 'YES' || cleaned === 'NO') {
@@ -54,10 +59,14 @@ export abstract class BaseLLMProvider {
     candidate: Candidate,
   ): Promise<string> {
     const prompt = this.buildCoverLetterPrompt(vacancy, candidate);
-    return this.ask(prompt, {
-      temperature: this.config.LLM_TEMPERATURE_COVER_LETTER ?? 0.4,
-      maxTokens: this.config.LLM_MAX_TOKENS_COVER_LETTER ?? 2000,
-    });
+    const askOptions: AskOptions = {};
+    if (this.config.LLM_TEMPERATURE_COVER_LETTER !== undefined) {
+      askOptions.temperature = this.config.LLM_TEMPERATURE_COVER_LETTER;
+    }
+    if (this.config.LLM_MAX_TOKENS_COVER_LETTER !== undefined) {
+      askOptions.maxTokens = this.config.LLM_MAX_TOKENS_COVER_LETTER;
+    }
+    return this.ask(prompt, askOptions);
   }
 
   protected buildAnalysisPrompt(text: string): string {

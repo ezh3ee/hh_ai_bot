@@ -14,6 +14,7 @@
 - When investigating a task, first inspect only files directly related to it.
 - Avoid broad repository-wide searches unless necessary.
 - DO not read .env files
+- DO TESTS using both build and start:dev
 
 ## Git-воркфлоу (обязательно если говорою "залей/запушь/закоммить на github")
 

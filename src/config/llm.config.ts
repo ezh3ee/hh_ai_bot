@@ -54,6 +54,41 @@ export const llmConfigSchema = z.discriminatedUnion('LLM_PROVIDER', [
 
 export type LlmConfig = z.infer<typeof llmConfigSchema>;
 
+export type OpenAiLike = {
+  provider: 'openrouter' | 'polza' | 'openai-compatible';
+  baseURL: string;
+  apiKey: string;
+  model: string;
+};
+
+export function toOpenAiLike(cfg: LlmConfig): OpenAiLike {
+  switch (cfg.LLM_PROVIDER) {
+    case 'openrouter':
+      return {
+        provider: cfg.LLM_PROVIDER,
+        baseURL: cfg.OPENROUTER_BASE_URL,
+        apiKey: cfg.OPENROUTER_API_KEY,
+        model: cfg.OPENROUTER_MODEL,
+      };
+    case 'polza':
+      return {
+        provider: cfg.LLM_PROVIDER,
+        baseURL: cfg.POLZA_BASE_URL,
+        apiKey: cfg.POLZA_API_KEY,
+        model: cfg.POLZA_MODEL,
+      };
+    case 'openai-compatible':
+      return {
+        provider: cfg.LLM_PROVIDER,
+        baseURL: cfg.OPENAI_COMPATIBLE_BASE_URL,
+        apiKey: cfg.OPENAI_COMPATIBLE_API_KEY,
+        model: cfg.OPENAI_COMPATIBLE_MODEL,
+      };
+    case 'ollama':
+      throw new Error('ollama идёт через OllamaProvider');
+  }
+}
+
 export default registerAs('llm', (): LlmConfig => {
   let data: LlmConfig;
   try {
