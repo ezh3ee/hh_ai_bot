@@ -14,6 +14,7 @@
 - When investigating a task, first inspect only files directly related to it.
 - Avoid broad repository-wide searches unless necessary.
 - DO not read .env files
+- DO TESTS using both build and start:dev
 
 ## Git-воркфлоу (обязательно если говорою "залей/запушь/закоммить на github")
 
@@ -26,6 +27,8 @@
 - gh pr create --title "{ЧТО СДЕЛАЛ}" --body "{Коротко: что изменено и зачем}"
 - НЕ нажимай merge. Жди моего решения.
 - Если я говорю «почини комменты на PR N»:
-  1. gh pr view N --comments
-  2. gh api repos/ТВОЙ_ЛОГИН/hh-ai-bot/pulls/N/comments
-     Прочитай оба вывода, исправь всё в той же ветке, закоммить, запушь. PR обновится сам.
+
+# 1. gh pr view N --comments
+
+1. gh api repos/ТВОЙ_ЛОГИН/НАЗВАНИЕ_ПРОЕКТА/pulls/N/comments
+   Прочитай оба вывода, исправь всё в той же ветке, закоммить, запушь. PR обновится сам.

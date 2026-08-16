@@ -81,6 +81,7 @@ settings.yml
 # prisma
 src/generated/prisma
 *.db
+dev.db
 
 # AI
 .agents
