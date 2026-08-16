@@ -4,14 +4,15 @@ import hhElementsConfig from './config/hh.elements.config';
 import hhUrlConfig from './config/hh.url.config';
 import llmConfig from './config/llm.config';
 import mainConfig from './config/main.config';
+import { SettingsConfigService } from './config/settings/settings-config.service';
 import settingsConfig from './config/settings/settings.config';
 import telegramConfig from './config/telegram.config';
 import { HhModule } from './hh/hh.module';
 import { LlmModule } from './llm/llm.module';
 import { LoggerModule } from './logger/logger.module';
 import { PrismaService } from './prisma/prisma.service';
-import { SettingsConfigService } from './config/settings/settings-config.service';
 import { TelegramModule } from './telegram/telegram.module';
+import { VacancyModule } from './vacancy/vacancy.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { TelegramModule } from './telegram/telegram.module';
       ],
     }),
     LoggerModule,
+    VacancyModule,
   ],
   providers: [PrismaService, SettingsConfigService],
 })
