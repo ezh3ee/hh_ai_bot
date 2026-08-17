@@ -25,7 +25,7 @@ const StorageStateSchema = z.object({
   origins: z.array(StorageStateOriginSchema),
 });
 
-type StorageState = z.infer<typeof StorageStateSchema>;
+export type StorageState = z.infer<typeof StorageStateSchema>;
 
 @Injectable()
 export class SessionService {
