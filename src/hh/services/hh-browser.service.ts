@@ -21,6 +21,10 @@ export class HhBrowserService implements OnModuleDestroy {
       return this.browser;
     }
 
+    /**
+     * динамический импорт, потому что cloakbrowser - ESM only
+     * статика будет работать, только если прописать type: module в package.json
+     */
     const { launch } = await import('cloakbrowser');
 
     const headlessMode = this.appConfig.HH_HEADLESS;
