@@ -1,6 +1,6 @@
 import { IsInt, IsPositive } from 'class-validator';
 
-export class CreateVacancyDto {
+export class AddVacancyByIdDto {
   @IsInt()
   @IsPositive()
   id!: number;

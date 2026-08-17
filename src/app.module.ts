@@ -12,6 +12,7 @@ import { LlmModule } from './llm/llm.module';
 import { LoggerModule } from './logger/logger.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { VacancyModule } from './vacancy/vacancy.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { VacancyModule } from './vacancy/vacancy.module';
     }),
     LoggerModule,
     VacancyModule,
+    PrismaModule,
   ],
   providers: [SettingsConfigService],
 })

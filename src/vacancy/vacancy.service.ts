@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, Vacancy } from '../generated/prisma/client';
 import { LoggerService } from '../logger/logger.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateVacancyDto } from './dto/create-vacancy.dto';
+import { AddVacancyByIdDto } from './dto/add-vacancy-by-id.dto';
 
 @Injectable()
 export class VacancyService {
@@ -11,7 +11,7 @@ export class VacancyService {
     private readonly logger: LoggerService,
   ) {}
 
-  async addVacancy(vacancy: CreateVacancyDto): Promise<Vacancy | null> {
+  async addVacancy(vacancy: AddVacancyByIdDto): Promise<Vacancy | null> {
     try {
       return await this.prisma.vacancy.create({ data: vacancy });
     } catch (e) {
