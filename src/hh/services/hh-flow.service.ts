@@ -2,13 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '../../logger/logger.service';
 import { LoginResult } from '../hh.types';
 import { HhAuthService } from './hh-auth.service';
-import { HhBrowserService } from './hh-browser.service';
 
 @Injectable()
 export class HhFlowService {
   constructor(
     private readonly authService: HhAuthService,
-    private readonly browserService: HhBrowserService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -35,13 +33,5 @@ export class HhFlowService {
       mode: 'manual',
       message: 'Manual login completed, session saved',
     };
-  }
-
-  getBrowserService(): HhBrowserService {
-    return this.browserService;
-  }
-
-  getAuthService(): HhAuthService {
-    return this.authService;
   }
 }

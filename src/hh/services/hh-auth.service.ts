@@ -70,10 +70,7 @@ export class HhAuthService {
       );
 
       if (await this.isLoggedIn(page)) {
-        const storageState = await this.browserService
-          .getContext()
-          .storageState();
-        await this.sessionService.writeSession(storageState);
+        await this.saveSession();
         this.logger.log('Авторизация прошла успешно');
         return;
       }
