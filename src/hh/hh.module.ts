@@ -1,19 +1,21 @@
 import { Module } from '@nestjs/common';
 import { LlmModule } from '../llm/llm.module';
 import { LoggerService } from '../logger/logger.service';
-import { ControlService } from './services/control.service';
-import { EntryService } from './services/entry.service';
-import { HhBrowserAutomationService } from './services/hh-browser-automation.service';
-import { SessionService } from './services/session.service';
+import { HhAuthService } from './services/hh-auth.service';
+import { HhBrowserService } from './services/hh-browser.service';
+import { HhEntryService } from './services/hh-entry.service';
+import { HhFlowService } from './services/hh-flow.service';
+import { HhSessionService } from './services/hh.session.service';
 
 @Module({
   imports: [LlmModule],
   providers: [
-    EntryService,
+    HhEntryService,
+    HhFlowService,
+    HhAuthService,
+    HhBrowserService,
+    HhSessionService,
     LoggerService,
-    HhBrowserAutomationService,
-    SessionService,
-    ControlService,
   ],
 })
 export class HhModule {}

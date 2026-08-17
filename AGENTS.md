@@ -19,7 +19,7 @@
 ## Git-воркфлоу (обязательно если говорою "залей/запушь/закоммить на github")
 
 - Никогда не коммить в main.
-- Под задачу создай ветку: git checkout -b ai/КОРОТКОЕ-ИМЯ-ЗАДАЧИ
+- Под задачу создай ветку: git checkout -b {feature/refactor/fix/и_т.д.}/КОРОТКОЕ-ИМЯ-ЗАДАЧИ
 - Перед коммитом запусти: npx tsc --noEmit -p tsconfig.build.json и npx eslint "src/**/*.ts". Если красное — чини до коммита.
 - Коммить с подписью бота:
   git -c user.name="Opencode" -c user.email="opencode@agents.local" commit -m "{ЧТО СДЕЛАЛ}"
