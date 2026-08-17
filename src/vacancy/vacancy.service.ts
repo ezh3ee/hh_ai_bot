@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, Vacancy } from '../generated/prisma/client';
 import { LoggerService } from '../logger/logger.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { AddVacancyByIdDto } from './dto/add-vacancy-by-id.dto';
+import { AddVacancyByIdDto } from './dto/add-vacancy-by-id.dto.js';
 
 @Injectable()
 export class VacancyService {
@@ -38,7 +38,8 @@ export class VacancyService {
           { action: 'addVacancy' },
         );
       }
-      return null;
+
+      throw e;
     }
   }
 
