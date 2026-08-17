@@ -5,7 +5,7 @@ import { HhAuthService } from './services/hh-auth.service';
 import { HhBrowserService } from './services/hh-browser.service';
 import { HhEntryService } from './services/hh-entry.service';
 import { HhFlowService } from './services/hh-flow.service';
-import { SessionService } from './services/session.service';
+import { SessionService } from './services/hh.session.service';
 
 @Module({
   imports: [LlmModule],

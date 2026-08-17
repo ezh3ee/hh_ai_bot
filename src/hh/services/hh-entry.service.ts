@@ -1,7 +1,7 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { LoginResult } from './hh-login-result';
-import { HhFlowService } from './hh-flow.service';
 import { LoggerService } from '../../logger/logger.service';
+import { LoginResult } from '../hh.types';
+import { HhFlowService } from './hh-flow.service';
 
 @Injectable()
 export class HhEntryService implements OnApplicationBootstrap {

@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { LoginResult } from './hh-login-result';
+import { LoggerService } from '../../logger/logger.service';
+import { LoginResult } from '../hh.types';
 import { HhAuthService } from './hh-auth.service';
 import { HhBrowserService } from './hh-browser.service';
-import { SessionService } from './session.service';
-import { LoggerService } from '../../logger/logger.service';
 
 @Injectable()
 export class HhFlowService {
   constructor(
     private readonly authService: HhAuthService,
     private readonly browserService: HhBrowserService,
-    private readonly sessionService: SessionService,
     private readonly logger: LoggerService,
   ) {}
 

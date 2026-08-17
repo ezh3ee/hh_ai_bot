@@ -3,7 +3,7 @@ import type { ConfigType } from '@nestjs/config';
 import { Browser, BrowserContext, Page } from 'playwright';
 import mainConfig from '../../config/main.config';
 import { LoggerService } from '../../logger/logger.service';
-import { StorageState } from './session.service';
+import { StorageState } from './hh.session.service';
 
 @Injectable()
 export class HhBrowserService implements OnModuleDestroy {

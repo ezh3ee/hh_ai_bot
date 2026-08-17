@@ -28,7 +28,7 @@ const StorageStateSchema = z.object({
 export type StorageState = z.infer<typeof StorageStateSchema>;
 
 @Injectable()
-export class SessionService {
+export class HhSessionService {
   private readonly filePath: string;
   private readonly fileName: string;
 
@@ -87,13 +87,24 @@ export class SessionService {
       await fs.unlink(this.filePath);
       this.logger.log(`[Session] Removed ${this.fileName}`);
     } catch (error: unknown) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      /**
+       * check if error is because of ENOENT
+       * then return
+       */
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        error.code === 'ENOENT'
+      ) {
         return;
       }
 
+      /**
+       * or just log it
+       */
       this.logger.error(
         `[Session] Failed to remove ${this.fileName}`,
-        error as Error,
+        error instanceof Error ? error : new Error(String(error)),
       );
     }
   }
