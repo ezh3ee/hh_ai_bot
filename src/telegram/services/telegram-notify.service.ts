@@ -1,6 +1,6 @@
 import { InjectBot } from '@grammyjs/nestjs';
 import { Injectable } from '@nestjs/common';
-import { Bot, Context } from 'grammy';
+import { Bot, Context, GrammyError } from 'grammy';
 import { LoggerService } from '../../logger/logger.service';
 import {
   renderVacancyCard,
@@ -27,10 +27,12 @@ export class TelegramNotifyService {
       });
       return msg.message_id;
     } catch (error) {
-      this.logger.error(
-        `Failed to send vacancy card to chat ${chatId}`,
-        error as Error,
-      );
+      if (error instanceof GrammyError) {
+        this.logger.error(
+          `Failed to send vacancy card in chat ${chatId}`,
+          error.description,
+        );
+      }
       throw error;
     }
   }
@@ -47,9 +49,12 @@ export class TelegramNotifyService {
         reply_markup,
       });
     } catch (error) {
-      this.logger.error(
-        `Failed to update vacancy card in chat ${chatId}, message ${messageId}`,
-      );
+      if (error instanceof GrammyError) {
+        this.logger.error(
+          `Failed to update vacancy card in chat ${chatId}, message ${messageId}`,
+          error.description,
+        );
+      }
       throw error;
     }
   }
