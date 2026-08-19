@@ -1,6 +1,6 @@
-import { Injectable, Inject, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
-import mainConfig from '../../config/main.config';
+import telegramConfig from '../../config/telegram.config';
 
 type ActionType = 'SEND' | 'REJECT' | 'EDIT';
 
@@ -21,8 +21,8 @@ export class TelegramWaitService implements OnModuleDestroy {
   private readonly textWaiters = new Map<string, Pending<string>>();
 
   constructor(
-    @Inject(mainConfig.KEY)
-    private readonly config: ConfigType<typeof mainConfig>,
+    @Inject(telegramConfig.KEY)
+    private readonly config: ConfigType<typeof telegramConfig>,
   ) {}
 
   private clearExistingWait(chatId: string): void {
