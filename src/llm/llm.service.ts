@@ -1,10 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { LLMFactory } from './llm.factory';
 import {
-  BaseLLMProvider,
   AskOptions,
+  BaseLLMProvider,
 } from './interfaces/llm-provider.interface';
-import { Vacancy, Candidate } from './llm.types';
+import { LLMFactory } from './llm.factory';
+import { Candidate, Vacancy } from './llm.types';
 
 @Injectable()
 export class LLMService implements OnModuleInit {
@@ -20,8 +20,11 @@ export class LLMService implements OnModuleInit {
     return this.provider.ask(prompt, options);
   }
 
-  async analyzeVacancy(text: string): Promise<'YES' | 'NO'> {
-    return this.provider.analyzeVacancy(text);
+  async analyzeVacancy(
+    text: string,
+    candidate: Candidate,
+  ): Promise<'YES' | 'NO'> {
+    return this.provider.analyzeVacancy(text, candidate);
   }
 
   async generateCoverLetter(
