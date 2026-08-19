@@ -4,6 +4,7 @@ import { z, ZodError } from 'zod';
 const telegramConfigSchema = z.object({
   BOT_TOKEN: z.string(),
   CHAT_ID: z.string(),
+  TELEGRAM_WAIT_TIMEOUT_MS: z.coerce.number().int().positive().default(3600000),
 });
 
 export type TgConfig = z.infer<typeof telegramConfigSchema>;
