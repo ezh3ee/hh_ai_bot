@@ -4,6 +4,7 @@ import { z, ZodError } from 'zod';
 const mainConfigSchema = z.object({
   HH_HEADLESS: z.coerce.boolean().default(false),
   DATABASE_URL: z.string(),
+  TELEGRAM_WAIT_TIMEOUT_MS: z.coerce.number().int().positive().default(3600000),
 });
 
 export type MainConfig = z.infer<typeof mainConfigSchema>;
