@@ -1,5 +1,5 @@
-import { InlineKeyboard } from 'grammy';
 import type { InlineKeyboardMarkup } from '@grammyjs/types';
+import { InlineKeyboard } from 'grammy';
 
 export interface VacancyCardData {
   id: number;
@@ -17,14 +17,25 @@ export interface RenderedCard {
   reply_markup: InlineKeyboardMarkup;
 }
 
+function escapeHtml(str: string): string {
+  const entities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  };
+  return str.replace(/[&<>"']/g, (match) => entities[match]);
+}
+
 export function renderVacancyCard(data: VacancyCardData): RenderedCard {
   const lines = [
-    `<b>Найдена вакансия:</b> <a href="${data.url}">${data.title}</a>`,
+    `<b>Найдена вакансия:</b> <a href="${escapeHtml(data.url)}">${escapeHtml(data.title)}</a>`,
   ];
 
-  if (data.workFormat) lines.push(`📍 ${data.workFormat}`);
-  if (data.salary) lines.push(`💰 ${data.salary}`);
-  if (data.coverLetter) lines.push(data.coverLetter);
+  if (data.workFormat) lines.push(`📍 ${escapeHtml(data.workFormat)}`);
+  if (data.salary) lines.push(`💰 ${escapeHtml(data.salary)}`);
+  if (data.coverLetter) lines.push(escapeHtml(data.coverLetter));
   if (data.hasQuestionnaire)
     lines.push('⚠️ <b>Есть анкета — проверьте перед отправкой!</b>');
 
@@ -37,6 +48,6 @@ export function renderVacancyCard(data: VacancyCardData): RenderedCard {
   return {
     text: lines.join('\n'),
     parse_mode: 'HTML',
-    reply_markup: { inline_keyboard: keyboard.inline_keyboard },
+    reply_markup: keyboard,
   };
 }

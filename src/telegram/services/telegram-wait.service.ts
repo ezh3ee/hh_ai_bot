@@ -11,6 +11,7 @@ interface ActionResult {
 
 interface Pending<T> {
   resolve: (v: T) => void;
+  reject: (e: Error) => void;
   timeout: NodeJS.Timeout;
 }
 
@@ -46,26 +47,34 @@ export class TelegramWaitService implements OnModuleDestroy {
     return new Promise<{
       type: 'SEND' | 'REJECT' | 'EDIT';
       vacancyId: number | null;
-    }>((resolve) => {
+    }>((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.actionWaiters.delete(chatId);
-        resolve({ type: 'REJECT', vacancyId: null });
+        reject(
+          new Error(
+            `Timeout waiting for action (${this.config.TELEGRAM_WAIT_TIMEOUT_MS}ms)`,
+          ),
+        );
       }, this.config.TELEGRAM_WAIT_TIMEOUT_MS);
 
-      this.actionWaiters.set(chatId, { resolve, timeout });
+      this.actionWaiters.set(chatId, { resolve, reject, timeout });
     });
   }
 
   waitForText(chatId: string): Promise<string> {
     this.clearExistingWait(chatId);
 
-    return new Promise<string>((resolve) => {
+    return new Promise<string>((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.textWaiters.delete(chatId);
-        resolve('');
+        reject(
+          new Error(
+            `Timeout waiting for text (${this.config.TELEGRAM_WAIT_TIMEOUT_MS}ms)`,
+          ),
+        );
       }, this.config.TELEGRAM_WAIT_TIMEOUT_MS);
 
-      this.textWaiters.set(chatId, { resolve, timeout });
+      this.textWaiters.set(chatId, { resolve, reject, timeout });
     });
   }
 
@@ -93,9 +102,11 @@ export class TelegramWaitService implements OnModuleDestroy {
   onModuleDestroy(): void {
     for (const [, pending] of this.actionWaiters) {
       clearTimeout(pending.timeout);
+      pending.reject(new Error('Service shutting down'));
     }
     for (const [, pending] of this.textWaiters) {
       clearTimeout(pending.timeout);
+      pending.reject(new Error('Service shutting down'));
     }
     this.actionWaiters.clear();
     this.textWaiters.clear();
@@ -104,6 +115,7 @@ export class TelegramWaitService implements OnModuleDestroy {
 
 interface Pending<T> {
   resolve: (v: T) => void;
+  reject: (e: Error) => void;
   timeout: NodeJS.Timeout;
 }
 

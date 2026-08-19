@@ -1,6 +1,7 @@
+import { InjectBot } from '@grammyjs/nestjs';
 import { Injectable } from '@nestjs/common';
 import { Bot, Context } from 'grammy';
-import { InjectBot } from '@grammyjs/nestjs';
+import { LoggerService } from '../../logger/logger.service';
 import {
   renderVacancyCard,
   VacancyCardData,
@@ -8,19 +9,30 @@ import {
 
 @Injectable()
 export class TelegramNotifyService {
-  constructor(@InjectBot() private readonly bot: Bot<Context>) {}
+  constructor(
+    @InjectBot() private readonly bot: Bot<Context>,
+    private readonly logger: LoggerService,
+  ) {}
 
   async sendVacancyCard(
     chatId: string,
     data: VacancyCardData,
   ): Promise<number> {
     const { text, parse_mode, reply_markup } = renderVacancyCard(data);
-    const msg = await this.bot.api.sendMessage(chatId, text, {
-      parse_mode,
-      reply_markup,
-      link_preview_options: { is_disabled: true },
-    });
-    return msg.message_id;
+    try {
+      const msg = await this.bot.api.sendMessage(chatId, text, {
+        parse_mode,
+        reply_markup,
+        link_preview_options: { is_disabled: true },
+      });
+      return msg.message_id;
+    } catch (error) {
+      this.logger.error(
+        `Failed to send vacancy card to chat ${chatId}`,
+        error as Error,
+      );
+      throw error;
+    }
   }
 
   async updateVacancyCard(
@@ -29,9 +41,16 @@ export class TelegramNotifyService {
     data: VacancyCardData,
   ): Promise<void> {
     const { text, parse_mode, reply_markup } = renderVacancyCard(data);
-    await this.bot.api.editMessageText(chatId, messageId, text, {
-      parse_mode,
-      reply_markup,
-    });
+    try {
+      await this.bot.api.editMessageText(chatId, messageId, text, {
+        parse_mode,
+        reply_markup,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to update vacancy card in chat ${chatId}, message ${messageId}`,
+      );
+      throw error;
+    }
   }
 }

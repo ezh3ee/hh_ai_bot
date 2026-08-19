@@ -12,6 +12,14 @@ const actionTypeMap = {
   edit: 'EDIT' as const,
 } as const;
 
+function extractChatId(ctx: Context): string | null {
+  const rawId = ctx.chat?.id ?? ctx.from?.id;
+  if (rawId === undefined || rawId === null) {
+    return null;
+  }
+  return String(rawId);
+}
+
 @Update()
 @Injectable()
 export class TelegramUpdate {
@@ -28,7 +36,12 @@ export class TelegramUpdate {
   @On('callback_query:data')
   async onCallbackQuery(@Ctx() ctx: CallbackQueryContext<Context>) {
     const data = ctx.callbackQuery.data;
-    const chatId = String(ctx.chat?.id ?? ctx.from?.id);
+    const chatId = extractChatId(ctx);
+
+    if (!chatId) {
+      await ctx.answerCallbackQuery();
+      return;
+    }
 
     if (!data) return;
 
@@ -50,7 +63,10 @@ export class TelegramUpdate {
 
   @On('message:text')
   onTextMessage(@Ctx() ctx: Context) {
-    const chatId = String(ctx.chat?.id ?? ctx.from?.id);
+    const chatId = extractChatId(ctx);
+
+    if (!chatId) return;
+
     const text = ctx.message?.text;
 
     if (text) {
