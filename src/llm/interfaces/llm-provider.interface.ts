@@ -1,8 +1,8 @@
 import type { ConfigType } from '@nestjs/config';
 import llmConfig from '../../config/llm.config';
-import { Vacancy, Candidate } from '../llm.types';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
 import { LoggerService } from '../../logger/logger.service';
+import { Candidate, Vacancy } from '../llm.types';
 
 export interface AskOptions {
   temperature?: number;
@@ -20,8 +20,11 @@ export abstract class BaseLLMProvider {
 
   abstract ask(prompt: string, options?: AskOptions): Promise<string>;
 
-  async analyzeVacancy(text: string): Promise<'YES' | 'NO'> {
-    const prompt = this.buildAnalysisPrompt(text);
+  async analyzeVacancy(
+    text: string,
+    candidate: Candidate,
+  ): Promise<'YES' | 'NO'> {
+    const prompt = this.buildAnalysisPrompt(text, candidate);
 
     for (let i = 1; i <= (this.config.LLM_MAX_RETRIES ?? 3); i++) {
       const askOptions: AskOptions = {};
@@ -69,9 +72,16 @@ export abstract class BaseLLMProvider {
     return this.ask(prompt, askOptions);
   }
 
-  protected buildAnalysisPrompt(text: string): string {
+  protected buildAnalysisPrompt(text: string, candidate: Candidate): string {
     const basePrompt = this.settings.aiInstructions.is_suitable;
-    return `${basePrompt}\n\nВАКАНСИЯ:\n${text}`;
+    const projects = candidate.projects
+      ? Object.values(candidate.projects)
+          .map(
+            (p) => `- ${p.name} (${p.role}, ${p.stack.join(', ')}) — ${p.url}`,
+          )
+          .join('\n')
+      : 'Нет проектов';
+    return `${basePrompt}\n\nВАКАНСИЯ:\n${text}\nРезюме: ${candidate.experience_summary}\n\nМОИ ПРОЕКТЫ:\n${projects}`;
   }
 
   protected buildCoverLetterPrompt(
