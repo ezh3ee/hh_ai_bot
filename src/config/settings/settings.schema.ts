@@ -25,7 +25,7 @@ const HhSchema = z.object({
   resume_name: z.string().min(1),
   search_queries: z.array(z.string()).min(1),
   areas: z.array(z.string()).min(1),
-  stop_words: z.array(z.string()).min(1),
+  stop_words: z.array(z.string()).optional(),
 });
 
 const AiInstructionsSchema = z.object({

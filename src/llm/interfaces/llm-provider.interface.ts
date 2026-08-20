@@ -60,8 +60,13 @@ export abstract class BaseLLMProvider {
   async generateCoverLetter(
     vacancy: Vacancy,
     candidate: Candidate,
+    additionalInstructions?: string,
   ): Promise<string> {
-    const prompt = this.buildCoverLetterPrompt(vacancy, candidate);
+    const prompt = this.buildCoverLetterPrompt(
+      vacancy,
+      candidate,
+      additionalInstructions,
+    );
     const askOptions: AskOptions = {};
     if (this.config.LLM_TEMPERATURE_COVER_LETTER !== undefined) {
       askOptions.temperature = this.config.LLM_TEMPERATURE_COVER_LETTER;
@@ -87,6 +92,7 @@ export abstract class BaseLLMProvider {
   protected buildCoverLetterPrompt(
     vacancy: Vacancy,
     candidate: Candidate,
+    additionalInstructions?: string,
   ): string {
     const basePrompt = this.settings.aiInstructions.cover_letter;
     const projects = candidate.projects
@@ -97,6 +103,10 @@ export abstract class BaseLLMProvider {
           .join('\n')
       : 'Нет проектов';
 
-    return `${basePrompt}\n\nВАКАНСИЯ:\nНазвание: ${vacancy.title}\nОписание: ${vacancy.description}\nРезюме: ${candidate.experience_summary}\n\nМОИ ПРОЕКТЫ:\n${projects}`;
+    const instructions = additionalInstructions
+      ? `\n\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ: ${additionalInstructions}`
+      : '';
+
+    return `${basePrompt}\n\nВАКАНСИЯ:\nНазвание: ${vacancy.title}\nОписание: ${vacancy.description}\nРезюме: ${candidate.experience_summary}\n\nМОИ ПРОЕКТЫ:\n${projects}${instructions}`;
   }
 }
