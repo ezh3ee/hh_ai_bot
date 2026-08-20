@@ -1,18 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
-import { Page, Locator } from 'playwright';
-import hhUrlConfig from '../../config/hh.url.config';
+import { Locator, Page } from 'playwright';
 import hhElementsConfig from '../../config/hh.elements.config';
-import telegramConfig, { type TgConfig } from '../../config/telegram.config';
+import hhUrlConfig from '../../config/hh.url.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
-import { LoggerService } from '../../logger/logger.service';
-import { HhBrowserService } from './hh-browser.service';
-import { VacancyService } from '../../vacancy/vacancy.service';
+import telegramConfig, { type TgConfig } from '../../config/telegram.config';
 import { LLMService } from '../../llm/llm.service';
+import { Candidate, Vacancy } from '../../llm/llm.types';
+import { LoggerService } from '../../logger/logger.service';
 import { TelegramNotifyService } from '../../telegram/services/telegram-notify.service';
 import { TelegramWaitService } from '../../telegram/services/telegram-wait.service';
+import { VacancyService } from '../../vacancy/vacancy.service';
+import { HhBrowserService } from './hh-browser.service';
 import { VacancyFilterService } from './vacancy-filter.service';
-import { Candidate, Vacancy } from '../../llm/llm.types';
 
 @Injectable()
 export class HhCrawlerService {
@@ -515,10 +515,10 @@ export class HhCrawlerService {
     const textarea = page.locator(this.elementConfig.HH_APPLY_FORM_TEXTAREA);
     await textarea.fill(coverLetter);
 
-    const submitButton = page.locator(
-      this.elementConfig.HH_APPLY_FORM_SUBMIT_BUTTON,
-    );
-    await submitButton.click();
+    // const submitButton = page.locator(
+    //   this.elementConfig.HH_APPLY_FORM_SUBMIT_BUTTON,
+    // );
+    // await submitButton.click();
 
     await page.waitForLoadState('networkidle');
     this.logger.log(`[Crawler] Response submitted for vacancy ${vacancyId}`);
