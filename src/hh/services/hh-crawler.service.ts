@@ -97,7 +97,10 @@ export class HhCrawlerService {
       detailedPage = await this.browserService.getLastPage();
       await detailedPage.waitForLoadState('domcontentloaded');
 
-      const vacancyData = await this.extractVacancyDetails(detailedPage);
+      const vacancyData = await this.extractVacancyDetails(
+        detailedPage,
+        vacancyId,
+      );
       if (!vacancyData) {
         this.logger.warn(
           `[Crawler] Could not extract details for vacancy ${vacancyId}`,
@@ -143,7 +146,10 @@ export class HhCrawlerService {
     }
   }
 
-  private async extractVacancyDetails(page: Page): Promise<Vacancy | null> {
+  private async extractVacancyDetails(
+    page: Page,
+    vacancyId: number,
+  ): Promise<Vacancy | null> {
     try {
       const companyName = await this.safeGetText(
         page,
@@ -171,7 +177,7 @@ export class HhCrawlerService {
       );
 
       return {
-        id: '',
+        id: String(vacancyId),
         title,
         company: companyName,
         description,

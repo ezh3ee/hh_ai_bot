@@ -193,9 +193,9 @@ export class HhPageNavigatorService {
       if (this.filterService.checkStopWords(description)) return true;
     } catch {
       const description = (await descEl.allTextContents()) ?? [];
-      description.forEach((text) => {
+      for (const text of description) {
         if (this.filterService.checkStopWords(text)) return true;
-      });
+      }
     }
 
     try {
@@ -203,9 +203,9 @@ export class HhPageNavigatorService {
       if (this.filterService.checkStopWords(requirements)) return true;
     } catch {
       const requirements = (await reqEl.allTextContents()) ?? [];
-      requirements.forEach((text) => {
+      for (const text of requirements) {
         if (this.filterService.checkStopWords(text)) return true;
-      });
+      }
     }
 
     return false;
