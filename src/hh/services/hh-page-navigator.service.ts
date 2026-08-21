@@ -24,12 +24,7 @@ export class HhPageNavigatorService {
   async processArea(
     area: string,
     searchQueries: string[],
-    processVacancyItem: (
-      page: Page,
-      item: Locator,
-      area: string,
-      keyword: string,
-    ) => Promise<void>,
+    processVacancyItem: (page: Page, item: Locator) => Promise<void>,
   ): Promise<void> {
     this.logger.log(`[Navigator] Processing area: ${area}`);
 
@@ -41,12 +36,7 @@ export class HhPageNavigatorService {
   private async processKeyword(
     area: string,
     keyword: string,
-    processVacancyItem: (
-      page: Page,
-      item: Locator,
-      area: string,
-      keyword: string,
-    ) => Promise<void>,
+    processVacancyItem: (page: Page, item: Locator) => Promise<void>,
   ): Promise<void> {
     this.logger.log(
       `[Navigator] Processing keyword: "${keyword}" in area: ${area}`,
@@ -151,12 +141,7 @@ export class HhPageNavigatorService {
     area: string,
     keyword: string,
     pageNum: number,
-    processVacancyItem: (
-      page: Page,
-      item: Locator,
-      area: string,
-      keyword: string,
-    ) => Promise<void>,
+    processVacancyItem: (page: Page, item: Locator) => Promise<void>,
   ): Promise<void> {
     this.logger.log(
       `[Navigator] Processing page ${pageNum} (area: ${area}, keyword: "${keyword}")`,
@@ -174,7 +159,7 @@ export class HhPageNavigatorService {
 
     for (let i = 0; i < count; i++) {
       const item = items.nth(i);
-      await processVacancyItem(page, item, area, keyword);
+      await processVacancyItem(page, item);
     }
   }
 

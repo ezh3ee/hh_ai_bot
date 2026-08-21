@@ -3,6 +3,7 @@ import type { ConfigType } from '@nestjs/config';
 import { Page } from 'playwright';
 import hhElementsConfig from '../../config/hh.elements.config';
 import hhConfig, { type HhConfig } from '../../config/hh.config';
+import mainConfig from '../../config/main.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
 import { LoggerService } from '../../logger/logger.service';
 
@@ -11,6 +12,8 @@ export class HhApplyService {
   constructor(
     @Inject(hhConfig.KEY)
     private readonly hhConfig: HhConfig,
+    @Inject(mainConfig.KEY)
+    private readonly appConfig: ConfigType<typeof mainConfig>,
     @Inject(hhElementsConfig.KEY)
     private readonly elementConfig: ConfigType<typeof hhElementsConfig>,
     private readonly settings: SettingsConfigService,
@@ -73,10 +76,12 @@ export class HhApplyService {
     const textarea = page.locator(this.elementConfig.HH_APPLY_FORM_TEXTAREA);
     await textarea.fill(coverLetter);
 
-    const submitButton = page.locator(
-      this.elementConfig.HH_APPLY_FORM_SUBMIT_BUTTON,
-    );
-    await submitButton.click();
+    if (!this.appConfig.TEST_MODE) {
+      const submitButton = page.locator(
+        this.elementConfig.HH_APPLY_FORM_SUBMIT_BUTTON,
+      );
+      await submitButton.click();
+    }
 
     await page.waitForLoadState('domcontentloaded');
     this.logger.log(`[Apply] Response submitted`);

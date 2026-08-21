@@ -14,13 +14,6 @@ import { HhApplyService } from './hh-apply.service';
 import { HhUserInteractionService } from './hh-user-interaction.service';
 import { Candidate, Vacancy } from '../../llm/llm.types';
 
-type ProcessVacancyItemFn = (
-  page: Page,
-  item: Locator,
-  _area: string,
-  _keyword: string,
-) => Promise<void>;
-
 @Injectable()
 export class HhCrawlerService {
   constructor(
@@ -50,7 +43,7 @@ export class HhCrawlerService {
       await this.pageNavigator.processArea(
         area,
         searchQueries,
-        this.processVacancyItem.bind(this) as ProcessVacancyItemFn,
+        this.processVacancyItem.bind(this),
       );
     }
 
@@ -72,14 +65,7 @@ export class HhCrawlerService {
     this.logger.log('[Crawler] Settings validated successfully');
   }
 
-  private async processVacancyItem(
-    page: Page,
-    item: Locator,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _area: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _keyword: string,
-  ): Promise<void> {
+  private async processVacancyItem(page: Page, item: Locator): Promise<void> {
     const vacancyId = await this.pageNavigator.extractVacancyId(item);
     if (!vacancyId) {
       this.logger.warn('[Crawler] Could not extract vacancy ID, skipping');
