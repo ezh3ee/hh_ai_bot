@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import hhElementsConfig from './config/hh.elements.config';
-import hhUrlConfig from './config/hh.url.config';
+import hhConfig from './config/hh.config';
 import llmConfig from './config/llm.config';
 import mainConfig from './config/main.config';
 import { SettingsConfigService } from './config/settings/settings-config.service';
@@ -24,7 +24,7 @@ import { PrismaModule } from './prisma/prisma.module';
       load: [
         mainConfig,
         telegramConfig,
-        hhUrlConfig,
+        hhConfig,
         hhElementsConfig,
         llmConfig,
         settingsConfig,

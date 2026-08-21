@@ -2,8 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { Locator, Page } from 'playwright';
 import hhElementsConfig from '../../config/hh.elements.config';
-import hhUrlConfig from '../../config/hh.url.config';
-import mainConfig from '../../config/main.config';
+import hhConfig, { type HhConfig } from '../../config/hh.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
 import telegramConfig from '../../config/telegram.config';
 import { LLMService } from '../../llm/llm.service';
@@ -18,14 +17,12 @@ import { VacancyFilterService } from './vacancy-filter.service';
 @Injectable()
 export class HhCrawlerService {
   constructor(
-    @Inject(hhUrlConfig.KEY)
-    private readonly urlConfig: ConfigType<typeof hhUrlConfig>,
+    @Inject(hhConfig.KEY)
+    private readonly hhConfig: HhConfig,
     @Inject(hhElementsConfig.KEY)
     private readonly elementConfig: ConfigType<typeof hhElementsConfig>,
     @Inject(telegramConfig.KEY)
     private readonly tgConfig: ConfigType<typeof telegramConfig>,
-    @Inject(mainConfig.KEY)
-    private readonly appConfig: ConfigType<typeof mainConfig>,
     private readonly settings: SettingsConfigService,
     private readonly browserService: HhBrowserService,
     private readonly vacancyService: VacancyService,
@@ -106,7 +103,7 @@ export class HhCrawlerService {
     keyword: string,
     pageNum: number,
   ): string {
-    const baseUrl = this.urlConfig.HH_MAIN_URL;
+    const baseUrl = this.hhConfig.HH_MAIN_URL;
     const encodedKeyword = encodeURIComponent(keyword);
     const workFormat = this.settings.candidate.work_format ?? [];
 
@@ -128,7 +125,10 @@ export class HhCrawlerService {
       const paginationBlock = page.locator(
         this.elementConfig.HH_LIST_PAGINATION_BLOCK,
       );
-      await paginationBlock.waitFor({ state: 'visible', timeout: 5000 });
+      await paginationBlock.waitFor({
+        state: 'visible',
+        timeout: this.hhConfig.HH_PAGINATION_TIMEOUT_MS,
+      });
 
       const totalPages2 = page.locator(
         this.elementConfig.HH_LIST_TOTAL_PAGES_2,
@@ -193,41 +193,40 @@ export class HhCrawlerService {
   }
 
   private async processVacancyItem(page: Page, item: Locator): Promise<void> {
-    try {
-      const vacancyId = await this.extractVacancyId(item);
-      if (!vacancyId) {
-        this.logger.warn('[Crawler] Could not extract vacancy ID, skipping');
-        return;
-      }
+    const vacancyId = await this.extractVacancyId(item);
+    if (!vacancyId) {
+      this.logger.warn('[Crawler] Could not extract vacancy ID, skipping');
+      return;
+    }
 
-      this.logger.log(`[Crawler] Processing vacancy ID: ${vacancyId}`);
+    this.logger.log(`[Crawler] Processing vacancy ID: ${vacancyId}`);
 
-      const existing = await this.vacancyService.getVacancy(vacancyId);
-      if (existing) {
-        this.logger.log(
-          `[Crawler] Vacancy ${vacancyId} already in DB, skipping`,
-        );
-        return;
-      }
+    const existing = await this.vacancyService.getVacancy(vacancyId);
+    if (existing) {
+      this.logger.log(`[Crawler] Vacancy ${vacancyId} already in DB, skipping`);
+      return;
+    }
 
-      if (await this.checkStopWordsOnItem(item)) {
-        await this.vacancyService.addVacancy({ id: vacancyId });
-        this.logger.log(
-          `[Crawler] Vacancy ${vacancyId} filtered by stop words, saved to DB`,
-        );
-        return;
-      }
-
+    if (await this.checkStopWordsOnItem(item)) {
+      await this.vacancyService.addVacancy({ id: vacancyId });
       this.logger.log(
-        `[Crawler] Vacancy ${vacancyId} PASSED stop words filter.`,
+        `[Crawler] Vacancy ${vacancyId} filtered by stop words, saved to DB`,
       );
+      return;
+    }
 
+    this.logger.log(`[Crawler] Vacancy ${vacancyId} PASSED stop words filter.`);
+
+    let detailedPage: Page | null = null;
+    try {
       await item.click();
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      const lastPage = await this.browserService.getLastPage();
-      await lastPage.waitForLoadState('domcontentloaded');
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.hhConfig.HH_PAGE_LOAD_DELAY_MS),
+      );
+      detailedPage = await this.browserService.getLastPage();
+      await detailedPage.waitForLoadState('domcontentloaded');
 
-      const vacancyData = await this.extractVacancyDetails(lastPage);
+      const vacancyData = await this.extractVacancyDetails(detailedPage);
       if (!vacancyData) {
         this.logger.warn(
           `[Crawler] Could not extract details for vacancy ${vacancyId}`,
@@ -253,18 +252,16 @@ export class HhCrawlerService {
       this.logger.log(
         `[Crawler] Vacancy ${vacancyId} approved by AI, proceeding to response`,
       );
-      await this.handleResponseFlow(
-        lastPage,
-        vacancyId,
-        vacancyData,
-        candidate,
-      );
+      await this.handleResponseFlow(detailedPage, vacancyData, candidate);
     } catch (error) {
-      console.error('[Crawler] Error: ', error);
       this.logger.error(
         `[Crawler] Error processing vacancy item`,
         error instanceof Error ? error : new Error(String(error)),
       );
+    } finally {
+      if (detailedPage) {
+        await detailedPage.close();
+      }
     }
   }
 
@@ -364,7 +361,7 @@ export class HhCrawlerService {
   private async safeGetText(
     page: Page,
     selector: string,
-    timeout = 2000,
+    timeout = this.hhConfig.HH_SAFE_GET_TEXT_TIMEOUT_MS,
   ): Promise<string> {
     try {
       return (
@@ -393,20 +390,34 @@ export class HhCrawlerService {
 
   private async handleResponseFlow(
     page: Page,
-    vacancyId: number,
     vacancyData: Vacancy,
     candidate: Candidate,
   ): Promise<void> {
     let additionalInstructions = '';
-    let state: 'WAITING_ACTION' | 'WAITING_EDIT' | 'COMPLETED' =
-      'WAITING_ACTION';
+    let state: 'AWAITING_DECISION' | 'AWAITING_EDIT' | 'COMPLETED' =
+      'AWAITING_DECISION';
     let messageId: number | null = null;
     let hasQuestionnaire = false;
 
-    await this.openResponsePage(page, vacancyId);
+    const vacancyId = vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1]
+      ? parseInt(vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1] ?? '0', 10)
+      : 0;
+
+    await this.openResponsePage(page);
     await page.waitForLoadState('domcontentloaded');
-    const lastPage = await this.browserService.getLastPage();
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) =>
+      setTimeout(resolve, this.hhConfig.HH_PAGE_LOAD_DELAY_MS),
+    );
+
+    let cardData: {
+      id: number;
+      title: string;
+      url: string;
+      workFormat: string | undefined;
+      salary: string | undefined;
+      coverLetter: string;
+      hasQuestionnaire: boolean;
+    } | null = null;
 
     while (state !== 'COMPLETED') {
       const coverLetter = await this.llmService.generateCoverLetter(
@@ -417,9 +428,7 @@ export class HhCrawlerService {
 
       let additionalForm: Locator | null = null;
       try {
-        additionalForm = lastPage.locator(
-          this.elementConfig.HH_IS_ADDITIONAL_FORM,
-        );
+        additionalForm = page.locator(this.elementConfig.HH_IS_ADDITIONAL_FORM);
       } catch {
         this.logger.log(`[Crawler] Additional form not found`);
       }
@@ -428,7 +437,7 @@ export class HhCrawlerService {
         ? (await additionalForm.count()) > 0
         : false;
 
-      const cardData = {
+      cardData = {
         id: vacancyId,
         title: vacancyData.title,
         url: vacancyData.url,
@@ -458,7 +467,7 @@ export class HhCrawlerService {
       }
 
       this.logger.log(
-        `[Crawler] Sent vacancy card to Telegram for vacancy ${vacancyId}`,
+        `[Crawler] Sent vacancy card to Telegram for vacancy ${cardData.id}`,
       );
 
       let action: {
@@ -469,19 +478,19 @@ export class HhCrawlerService {
         action = await this.telegramWait.waitForAction(this.tgConfig.CHAT_ID);
       } catch (error) {
         this.logger.error(
-          `[Crawler] Telegram wait timeout for vacancy ${vacancyId}`,
+          `[Crawler] Telegram wait timeout for vacancy ${cardData?.id ?? vacancyId}`,
           error instanceof Error ? error : new Error(String(error)),
         );
-        await this.vacancyService.addVacancy({ id: vacancyId });
+        await this.vacancyService.addVacancy({ id: cardData?.id ?? vacancyId });
         state = 'COMPLETED';
         break;
       }
 
       switch (action.type) {
         case 'REJECT': {
-          await this.vacancyService.addVacancy({ id: vacancyId });
+          await this.vacancyService.addVacancy({ id: cardData.id });
           this.logger.log(
-            `[Crawler] Vacancy ${vacancyId} rejected by user, saved to DB`,
+            `[Crawler] Vacancy ${cardData.id} rejected by user, saved to DB`,
           );
 
           const successText = `\n\n❌❌❌ВАКАНСИЯ ОТКЛОНЕНА❌❌❌`;
@@ -510,12 +519,12 @@ export class HhCrawlerService {
 
             additionalInstructions = instructions;
             this.logger.log(
-              `[Crawler] Received edit instructions for vacancy ${vacancyId}`,
+              `[Crawler] Received edit instructions for vacancy ${cardData.id}`,
             );
-            state = 'WAITING_ACTION';
+            state = 'AWAITING_DECISION';
           } catch (error) {
             this.logger.error(
-              `[Crawler] Failed to get edit instructions for vacancy ${vacancyId}`,
+              `[Crawler] Failed to get edit instructions for vacancy ${cardData.id}`,
               error instanceof Error ? error : new Error(String(error)),
             );
 
@@ -525,11 +534,11 @@ export class HhCrawlerService {
         }
         case 'SEND': {
           this.logger.log(
-            `[Crawler] User approved sending response for vacancy ${vacancyId}`,
+            `[Crawler] User approved sending response for vacancy ${cardData.id}`,
           );
 
-          await this.submitResponse(lastPage, vacancyId, coverLetter);
-          await this.vacancyService.addVacancy({ id: vacancyId });
+          await this.submitResponse(page, coverLetter);
+          await this.vacancyService.addVacancy({ id: cardData.id });
 
           const successText = `\n\n✅✅✅ОСТАВЛЕН ОТКЛИК✅✅✅`;
           cardData.coverLetter = cardData.coverLetter + successText;
@@ -546,25 +555,27 @@ export class HhCrawlerService {
       }
     }
 
-    if (hasQuestionnaire) {
+    if (hasQuestionnaire && cardData) {
       this.logger.log(
-        `[Crawler] Vacancy ${vacancyId} has questionnaire, waiting for manual completion`,
+        `[Crawler] Vacancy ${cardData.id} has questionnaire, waiting for manual completion`,
       );
     }
-
-    await lastPage.close();
   }
 
-  private async openResponsePage(page: Page, vacancyId: number): Promise<void> {
-    const responseUrl = `${this.urlConfig.HH_MAIN_URL}/applicant/vacancy_response?vacancyId=${vacancyId}`;
+  private async openResponsePage(page: Page): Promise<void> {
+    const vacancyId = page.url().match(/\/vacancy\/(\d+)/)?.[1];
+    if (!vacancyId) {
+      this.logger.error(
+        '[Crawler] Could not extract vacancyId from URL',
+        new Error('vacancyId not found in URL'),
+      );
+      return;
+    }
+    const responseUrl = `${this.hhConfig.HH_MAIN_URL}/applicant/vacancy_response?vacancyId=${vacancyId}`;
     await page.goto(responseUrl, { waitUntil: 'domcontentloaded' });
   }
 
-  private async submitResponse(
-    page: Page,
-    vacancyId: number,
-    coverLetter: string,
-  ): Promise<void> {
+  private async submitResponse(page: Page, coverLetter: string): Promise<void> {
     const resumeDropdown = page
       .locator(this.elementConfig.HH_RESUME_DROPDOWN_SELECTOR)
       .first();
@@ -576,7 +587,9 @@ export class HhCrawlerService {
         `[Crawler] Resume mismatch: current="${currentResume}", target="${targetResume}"`,
       );
       await resumeDropdown.click();
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.hhConfig.HH_DROPDOWN_DELAY_MS),
+      );
 
       const resumes = page.locator(this.elementConfig.HH_RESUME_DROPDOWN_NAME);
       const resumesCount = await resumes.count();
@@ -618,14 +631,12 @@ export class HhCrawlerService {
     const textarea = page.locator(this.elementConfig.HH_APPLY_FORM_TEXTAREA);
     await textarea.fill(coverLetter);
 
-    if (!this.appConfig.TEST_MODE) {
-      const submitButton = page.locator(
-        this.elementConfig.HH_APPLY_FORM_SUBMIT_BUTTON,
-      );
-      await submitButton.click();
-    }
+    const submitButton = page.locator(
+      this.elementConfig.HH_APPLY_FORM_SUBMIT_BUTTON,
+    );
+    await submitButton.click();
 
     await page.waitForLoadState('domcontentloaded');
-    this.logger.log(`[Crawler] Response submitted for vacancy ${vacancyId}`);
+    this.logger.log(`[Crawler] Response submitted for vacancy`);
   }
 }
