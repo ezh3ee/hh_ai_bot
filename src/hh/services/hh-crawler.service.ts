@@ -398,7 +398,8 @@ export class HhCrawlerService {
     candidate: Candidate,
   ): Promise<void> {
     let additionalInstructions = '';
-    let finished = false;
+    let state: 'WAITING_ACTION' | 'WAITING_EDIT' | 'COMPLETED' =
+      'WAITING_ACTION';
     let messageId: number | null = null;
     let hasQuestionnaire = false;
 
@@ -407,7 +408,7 @@ export class HhCrawlerService {
     const lastPage = await this.browserService.getLastPage();
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    while (!finished) {
+    while (state !== 'COMPLETED') {
       const coverLetter = await this.llmService.generateCoverLetter(
         vacancyData,
         candidate,
@@ -472,7 +473,7 @@ export class HhCrawlerService {
           error instanceof Error ? error : new Error(String(error)),
         );
         await this.vacancyService.addVacancy({ id: vacancyId });
-        finished = true;
+        state = 'COMPLETED';
         break;
       }
 
@@ -492,7 +493,7 @@ export class HhCrawlerService {
             cardData,
           );
 
-          finished = true;
+          state = 'COMPLETED';
           break;
         }
         case 'EDIT': {
@@ -511,13 +512,14 @@ export class HhCrawlerService {
             this.logger.log(
               `[Crawler] Received edit instructions for vacancy ${vacancyId}`,
             );
+            state = 'WAITING_ACTION';
           } catch (error) {
             this.logger.error(
               `[Crawler] Failed to get edit instructions for vacancy ${vacancyId}`,
               error instanceof Error ? error : new Error(String(error)),
             );
 
-            finished = true;
+            state = 'COMPLETED';
           }
           break;
         }
@@ -538,7 +540,7 @@ export class HhCrawlerService {
             cardData,
           );
 
-          finished = true;
+          state = 'COMPLETED';
           break;
         }
       }
