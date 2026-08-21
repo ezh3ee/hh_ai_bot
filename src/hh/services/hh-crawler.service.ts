@@ -40,10 +40,8 @@ export class HhCrawlerService {
     const searchQueries = this.settings.hh.search_queries;
 
     for (const area of areas) {
-      await this.pageNavigator.processArea(
-        area,
-        searchQueries,
-        this.processVacancyItem.bind(this),
+      await this.pageNavigator.processArea(area, searchQueries, (page, item) =>
+        this.processVacancyItem(page, item),
       );
     }
 
