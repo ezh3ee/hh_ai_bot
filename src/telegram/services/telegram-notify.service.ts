@@ -14,6 +14,32 @@ export class TelegramNotifyService {
     private readonly logger: LoggerService,
   ) {}
 
+  async sendText(
+    chatId: string,
+    text: string,
+    replyToMessageId?: number,
+  ): Promise<void> {
+    try {
+      await this.bot.api.sendMessage(
+        chatId,
+        text,
+        replyToMessageId !== undefined && replyToMessageId !== null
+          ? {
+              reply_parameters: { message_id: replyToMessageId },
+            }
+          : {},
+      );
+    } catch (error) {
+      if (error instanceof GrammyError) {
+        this.logger.error(
+          `Failed to send text in chat ${chatId}`,
+          error.description,
+        );
+      }
+      throw error;
+    }
+  }
+
   async sendVacancyCard(
     chatId: string,
     data: VacancyCardData,

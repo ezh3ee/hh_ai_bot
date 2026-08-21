@@ -5,7 +5,7 @@ const ProjectSchema = z.object({
   role: z.string().min(1),
   period: z.string().min(1),
   type: z.string().min(1),
-  url: z.string().url(),
+  url: z.url().nullable(),
   stack: z.array(z.string()).min(1),
   description: z.string().min(1),
 });

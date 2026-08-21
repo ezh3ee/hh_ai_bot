@@ -22,7 +22,10 @@ const hhElementsConfigSchema = z.object({
   HH_IS_ADDITIONAL_FORM: z.string(),
   HH_RESUME_DROPDOWN_SELECTOR: z.string(),
   HH_RESUME_DROPDOWN_LIST: z.string(),
+  HH_RESUME_DROPDOWN_LIST_XS: z.string(),
   HH_RESUME_DROPDOWN_NAME: z.string(),
+  HH_RESUME_DROPDOWN_NAME_XS: z.string(),
+  HH_APPLY_FORM_COVER_LETTER_TRIGGER: z.string(),
   HH_APPLY_FORM_TEXTAREA: z.string(),
   HH_APPLY_FORM_SUBMIT_BUTTON: z.string(),
 });

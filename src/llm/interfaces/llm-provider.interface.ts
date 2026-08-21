@@ -98,7 +98,10 @@ export abstract class BaseLLMProvider {
     const projects = candidate.projects
       ? Object.values(candidate.projects)
           .map(
-            (p) => `- ${p.name} (${p.role}, ${p.stack.join(', ')}) — ${p.url}`,
+            (p) =>
+              `- Название: ${p.name}
+             (Моя роль в проекте: ${p.role}, Стэк: ${p.stack.join(', ')}, Период: ${p.period}, Тип работы: ${p.type}, Описание проекта: ${p.description},)
+              — ${p.url}`,
           )
           .join('\n')
       : 'Нет проектов';
@@ -107,6 +110,12 @@ export abstract class BaseLLMProvider {
       ? `\n\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ: ${additionalInstructions}`
       : '';
 
-    return `${basePrompt}\n\nВАКАНСИЯ:\nНазвание: ${vacancy.title}\nОписание: ${vacancy.description}\nРезюме: ${candidate.experience_summary}\n\nМОИ ПРОЕКТЫ:\n${projects}${instructions}`;
+    return `${instructions}
+    ${basePrompt}
+    ${candidate.experience_summary}
+    \n\nВАКАНСИЯ:\nНазвание: ${vacancy.title}
+    \nОписание: ${vacancy.description}
+    \nРезюме: ${candidate.experience_summary}
+    \n\nМОИ ПРОЕКТЫ:\n${projects}`;
   }
 }

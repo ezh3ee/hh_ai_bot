@@ -65,6 +65,11 @@ export class HhBrowserService implements OnModuleDestroy {
     return pages[0] ?? (await this.newPage());
   }
 
+  async getLastPage(): Promise<Page> {
+    const pages = this.getContext().pages();
+    return pages[pages.length - 1] ?? (await this.newPage());
+  }
+
   async closeContext(): Promise<void> {
     if (this.context) {
       await this.context.close();
