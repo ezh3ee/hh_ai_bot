@@ -11,6 +11,9 @@ import { HhCrawlerService } from './services/hh-crawler.service';
 import { HhEntryService } from './services/hh-entry.service';
 import { HhFlowService } from './services/hh-flow.service';
 import { HhSessionService } from './services/hh.session.service';
+import { HhApplyService } from './services/hh-apply.service';
+import { HhPageNavigatorService } from './services/hh-page-navigator.service';
+import { HhUserInteractionService } from './services/hh-user-interaction.service';
 import { VacancyFilterService } from './services/vacancy-filter.service';
 
 @Module({
@@ -22,6 +25,9 @@ import { VacancyFilterService } from './services/vacancy-filter.service';
     HhBrowserService,
     HhSessionService,
     HhCrawlerService,
+    HhPageNavigatorService,
+    HhApplyService,
+    HhUserInteractionService,
     VacancyFilterService,
     LoggerService,
     VacancyService,

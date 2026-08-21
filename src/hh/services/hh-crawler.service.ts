@@ -4,15 +4,22 @@ import { Locator, Page } from 'playwright';
 import hhElementsConfig from '../../config/hh.elements.config';
 import hhConfig, { type HhConfig } from '../../config/hh.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
-import telegramConfig from '../../config/telegram.config';
-import { LLMService } from '../../llm/llm.service';
-import { Candidate, Vacancy } from '../../llm/llm.types';
 import { LoggerService } from '../../logger/logger.service';
-import { TelegramNotifyService } from '../../telegram/services/telegram-notify.service';
-import { TelegramWaitService } from '../../telegram/services/telegram-wait.service';
-import { VacancyService } from '../../vacancy/vacancy.service';
 import { HhBrowserService } from './hh-browser.service';
+import { VacancyService } from '../../vacancy/vacancy.service';
+import { LLMService } from '../../llm/llm.service';
 import { VacancyFilterService } from './vacancy-filter.service';
+import { HhPageNavigatorService } from './hh-page-navigator.service';
+import { HhApplyService } from './hh-apply.service';
+import { HhUserInteractionService } from './hh-user-interaction.service';
+import { Candidate, Vacancy } from '../../llm/llm.types';
+
+type ProcessVacancyItemFn = (
+  page: Page,
+  item: Locator,
+  _area: string,
+  _keyword: string,
+) => Promise<void>;
 
 @Injectable()
 export class HhCrawlerService {
@@ -21,14 +28,13 @@ export class HhCrawlerService {
     private readonly hhConfig: HhConfig,
     @Inject(hhElementsConfig.KEY)
     private readonly elementConfig: ConfigType<typeof hhElementsConfig>,
-    @Inject(telegramConfig.KEY)
-    private readonly tgConfig: ConfigType<typeof telegramConfig>,
     private readonly settings: SettingsConfigService,
     private readonly browserService: HhBrowserService,
     private readonly vacancyService: VacancyService,
     private readonly llmService: LLMService,
-    private readonly telegramNotify: TelegramNotifyService,
-    private readonly telegramWait: TelegramWaitService,
+    private readonly pageNavigator: HhPageNavigatorService,
+    private readonly applyService: HhApplyService,
+    private readonly userInteraction: HhUserInteractionService,
     private readonly filterService: VacancyFilterService,
     private readonly logger: LoggerService,
   ) {}
@@ -41,7 +47,11 @@ export class HhCrawlerService {
     const searchQueries = this.settings.hh.search_queries;
 
     for (const area of areas) {
-      await this.processArea(area, searchQueries);
+      await this.pageNavigator.processArea(
+        area,
+        searchQueries,
+        this.processVacancyItem.bind(this) as ProcessVacancyItemFn,
+      );
     }
 
     this.logger.log('[Crawler] Search completed');
@@ -62,138 +72,15 @@ export class HhCrawlerService {
     this.logger.log('[Crawler] Settings validated successfully');
   }
 
-  private async processArea(
-    area: string,
-    searchQueries: string[],
-  ): Promise<void> {
-    this.logger.log(`[Crawler] Processing area: ${area}`);
-
-    for (const keyword of searchQueries) {
-      await this.processKeyword(area, keyword);
-    }
-  }
-
-  private async processKeyword(area: string, keyword: string): Promise<void> {
-    this.logger.log(
-      `[Crawler] Processing keyword: "${keyword}" in area: ${area}`,
-    );
-
-    const firstPageUrl = this.buildSearchUrl(area, keyword, 0);
-    const page = await this.browserService.newPage();
-
-    try {
-      await page.goto(firstPageUrl, { waitUntil: 'domcontentloaded' });
-      const totalPages = await this.getTotalPages(page);
-      this.logger.log(`[Crawler] Total pages: ${totalPages}`);
-
-      for (let pageNum = 0; pageNum < totalPages; pageNum++) {
-        if (pageNum > 0) {
-          const pageUrl = this.buildSearchUrl(area, keyword, pageNum);
-          await page.goto(pageUrl, { waitUntil: 'domcontentloaded' });
-        }
-        await this.processPage(page, area, keyword, pageNum);
-      }
-    } finally {
-      await page.close();
-    }
-  }
-
-  private buildSearchUrl(
-    area: string,
-    keyword: string,
-    pageNum: number,
-  ): string {
-    const baseUrl = this.hhConfig.HH_MAIN_URL;
-    const encodedKeyword = encodeURIComponent(keyword);
-    const workFormat = this.settings.candidate.work_format ?? [];
-
-    let url = `${baseUrl}/search/vacancy?text=${encodedKeyword}&area=${area}`;
-
-    if (workFormat.length > 0) {
-      url += `&work_format=${workFormat.join(',')}`;
-    }
-
-    if (pageNum > 0) {
-      url += `&page=${pageNum}`;
-    }
-
-    return url;
-  }
-
-  private async getTotalPages(page: Page): Promise<number> {
-    try {
-      const paginationBlock = page.locator(
-        this.elementConfig.HH_LIST_PAGINATION_BLOCK,
-      );
-      await paginationBlock.waitFor({
-        state: 'visible',
-        timeout: this.hhConfig.HH_PAGINATION_TIMEOUT_MS,
-      });
-
-      const totalPages2 = page.locator(
-        this.elementConfig.HH_LIST_TOTAL_PAGES_2,
-      );
-      if (await totalPages2.count()) {
-        const text = await totalPages2.textContent();
-        const parsed = parseInt(text?.trim() ?? '', 10);
-        if (!isNaN(parsed) && parsed > 0) {
-          this.logger.log(`[Crawler] Total pages (method 2): ${parsed}`);
-          return parsed;
-        }
-      }
-
-      const totalPages1 = page.locator(
-        this.elementConfig.HH_LIST_TOTAL_PAGES_1,
-      );
-      if (await totalPages1.count()) {
-        const text = await totalPages1.textContent();
-        const parsed = parseInt(text?.trim() ?? '', 10);
-        if (!isNaN(parsed) && parsed > 0) {
-          this.logger.log(`[Crawler] Total pages (method 1): ${parsed}`);
-          return parsed;
-        }
-      }
-
-      this.logger.warn(
-        '[Crawler] Could not determine total pages, processing single page',
-      );
-      return 1;
-    } catch {
-      this.logger.warn(
-        '[Crawler] Pagination block not found, processing single page',
-      );
-      return 1;
-    }
-  }
-
-  private async processPage(
+  private async processVacancyItem(
     page: Page,
-    area: string,
-    keyword: string,
-    pageNum: number,
+    item: Locator,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _area: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _keyword: string,
   ): Promise<void> {
-    this.logger.log(
-      `[Crawler] Processing page ${pageNum} (area: ${area}, keyword: "${keyword}")`,
-    );
-
-    const vacanciesList = page.locator(
-      this.elementConfig.HH_LIST_VACANCIES_LIST,
-    );
-    const items = vacanciesList.locator(
-      this.elementConfig.HH_LIST_VACANCY_ITEM,
-    );
-    const count = await items.count();
-
-    this.logger.log(`[Crawler] Found ${count} vacancies on page ${pageNum}`);
-
-    for (let i = 0; i < count; i++) {
-      const item = items.nth(i);
-      await this.processVacancyItem(page, item);
-    }
-  }
-
-  private async processVacancyItem(page: Page, item: Locator): Promise<void> {
-    const vacancyId = await this.extractVacancyId(item);
+    const vacancyId = await this.pageNavigator.extractVacancyId(item);
     if (!vacancyId) {
       this.logger.warn('[Crawler] Could not extract vacancy ID, skipping');
       return;
@@ -207,7 +94,7 @@ export class HhCrawlerService {
       return;
     }
 
-    if (await this.checkStopWordsOnItem(item)) {
+    if (await this.pageNavigator.checkStopWordsOnItem(item)) {
       await this.vacancyService.addVacancy({ id: vacancyId });
       this.logger.log(
         `[Crawler] Vacancy ${vacancyId} filtered by stop words, saved to DB`,
@@ -252,7 +139,12 @@ export class HhCrawlerService {
       this.logger.log(
         `[Crawler] Vacancy ${vacancyId} approved by AI, proceeding to response`,
       );
-      await this.handleResponseFlow(detailedPage, vacancyData, candidate);
+      await this.userInteraction.handleResponseFlow(
+        detailedPage,
+        vacancyData,
+        candidate,
+      );
+      await this.applyService.submitResponse(detailedPage, '');
     } catch (error) {
       this.logger.error(
         `[Crawler] Error processing vacancy item`,
@@ -263,54 +155,6 @@ export class HhCrawlerService {
         await detailedPage.close();
       }
     }
-  }
-
-  private async extractVacancyId(item: Locator): Promise<number | null> {
-    try {
-      const link = item.locator(this.elementConfig.HH_LIST_VACANCY_LINK);
-      const href = await link.getAttribute('href');
-      if (!href) return null;
-
-      const match = href.match(/\/vacancy\/(\d+)/);
-      return match ? parseInt(match[1], 10) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  private async checkStopWordsOnItem(item: Locator): Promise<boolean> {
-    const titleEl = item.locator(this.elementConfig.HH_LIST_VACANCY_TITLE);
-    const descEl = item.locator(
-      this.elementConfig.HH_LIST_VACANCY_SNIPPET_DESCRIPTION,
-    );
-    const reqEl = item.locator(
-      this.elementConfig.HH_LIST_VACANCY_SNIPPET_REQUIREMENTS,
-    );
-
-    const title = (await titleEl.textContent()) ?? '';
-    if (this.filterService.checkStopWords(title)) return true;
-
-    try {
-      const description = (await descEl.textContent()) ?? '';
-      if (this.filterService.checkStopWords(description)) return true;
-    } catch {
-      const description = (await descEl.allTextContents()) ?? [];
-      description.forEach((text) => {
-        if (this.filterService.checkStopWords(text)) return true;
-      });
-    }
-
-    try {
-      const requirements = (await reqEl.textContent()) ?? '';
-      if (this.filterService.checkStopWords(requirements)) return true;
-    } catch {
-      const requirements = (await reqEl.allTextContents()) ?? [];
-      requirements.forEach((text) => {
-        if (this.filterService.checkStopWords(text)) return true;
-      });
-    }
-
-    return false;
   }
 
   private async extractVacancyDetails(page: Page): Promise<Vacancy | null> {
@@ -358,14 +202,14 @@ export class HhCrawlerService {
     }
   }
 
-  private async safeGetText(
-    page: Page,
-    selector: string,
-    timeout = this.hhConfig.HH_SAFE_GET_TEXT_TIMEOUT_MS,
-  ): Promise<string> {
+  private async safeGetText(page: Page, selector: string): Promise<string> {
     try {
       return (
-        (await page.locator(selector).textContent({ timeout }))?.trim() ?? ''
+        (
+          await page.locator(selector).textContent({
+            timeout: this.hhConfig.HH_SAFE_GET_TEXT_TIMEOUT_MS,
+          })
+        )?.trim() ?? ''
       );
     } catch {
       this.logger.warn(`[Crawler] Failed to extract selector ${selector}`, {
@@ -386,257 +230,5 @@ export class HhCrawlerService {
       experience_summary: candidateSettings.experience_summary,
       projects: candidateSettings.projects,
     };
-  }
-
-  private async handleResponseFlow(
-    page: Page,
-    vacancyData: Vacancy,
-    candidate: Candidate,
-  ): Promise<void> {
-    let additionalInstructions = '';
-    let state: 'AWAITING_DECISION' | 'AWAITING_EDIT' | 'COMPLETED' =
-      'AWAITING_DECISION';
-    let messageId: number | null = null;
-    let hasQuestionnaire = false;
-
-    const vacancyId = vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1]
-      ? parseInt(vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1] ?? '0', 10)
-      : 0;
-
-    await this.openResponsePage(page);
-    await page.waitForLoadState('domcontentloaded');
-    await new Promise((resolve) =>
-      setTimeout(resolve, this.hhConfig.HH_PAGE_LOAD_DELAY_MS),
-    );
-
-    let cardData: {
-      id: number;
-      title: string;
-      url: string;
-      workFormat: string | undefined;
-      salary: string | undefined;
-      coverLetter: string;
-      hasQuestionnaire: boolean;
-    } | null = null;
-
-    while (state !== 'COMPLETED') {
-      const coverLetter = await this.llmService.generateCoverLetter(
-        vacancyData,
-        candidate,
-        additionalInstructions,
-      );
-
-      let additionalForm: Locator | null = null;
-      try {
-        additionalForm = page.locator(this.elementConfig.HH_IS_ADDITIONAL_FORM);
-      } catch {
-        this.logger.log(`[Crawler] Additional form not found`);
-      }
-
-      hasQuestionnaire = additionalForm
-        ? (await additionalForm.count()) > 0
-        : false;
-
-      cardData = {
-        id: vacancyId,
-        title: vacancyData.title,
-        url: vacancyData.url,
-        workFormat: vacancyData.location,
-        salary: vacancyData.salary,
-        coverLetter,
-        hasQuestionnaire,
-      };
-
-      if (messageId === null) {
-        messageId = await this.telegramNotify.sendVacancyCard(
-          this.tgConfig.CHAT_ID,
-          cardData,
-        );
-      } else {
-        await this.telegramNotify.updateVacancyCard(
-          this.tgConfig.CHAT_ID,
-          messageId,
-          cardData,
-        );
-
-        await this.telegramNotify.sendText(
-          this.tgConfig.CHAT_ID,
-          'Сопроводительное письмо обновлено.',
-          messageId,
-        );
-      }
-
-      this.logger.log(
-        `[Crawler] Sent vacancy card to Telegram for vacancy ${cardData.id}`,
-      );
-
-      let action: {
-        type: 'SEND' | 'REJECT' | 'EDIT';
-        vacancyId: number | null;
-      };
-      try {
-        action = await this.telegramWait.waitForAction(this.tgConfig.CHAT_ID);
-      } catch (error) {
-        this.logger.error(
-          `[Crawler] Telegram wait timeout for vacancy ${cardData?.id ?? vacancyId}`,
-          error instanceof Error ? error : new Error(String(error)),
-        );
-        await this.vacancyService.addVacancy({ id: cardData?.id ?? vacancyId });
-        state = 'COMPLETED';
-        break;
-      }
-
-      switch (action.type) {
-        case 'REJECT': {
-          await this.vacancyService.addVacancy({ id: cardData.id });
-          this.logger.log(
-            `[Crawler] Vacancy ${cardData.id} rejected by user, saved to DB`,
-          );
-
-          const successText = `\n\n❌❌❌ВАКАНСИЯ ОТКЛОНЕНА❌❌❌`;
-          cardData.coverLetter = cardData.coverLetter + successText;
-
-          await this.telegramNotify.updateVacancyCard(
-            this.tgConfig.CHAT_ID,
-            messageId,
-            cardData,
-          );
-
-          state = 'COMPLETED';
-          break;
-        }
-        case 'EDIT': {
-          try {
-            await this.telegramNotify.sendText(
-              this.tgConfig.CHAT_ID,
-              'Введите дополнительные инструкции для написания более точного сопроводительного письма',
-              messageId,
-            );
-
-            const instructions = await this.telegramWait.waitForText(
-              this.tgConfig.CHAT_ID,
-            );
-
-            additionalInstructions = instructions;
-            this.logger.log(
-              `[Crawler] Received edit instructions for vacancy ${cardData.id}`,
-            );
-            state = 'AWAITING_DECISION';
-          } catch (error) {
-            this.logger.error(
-              `[Crawler] Failed to get edit instructions for vacancy ${cardData.id}`,
-              error instanceof Error ? error : new Error(String(error)),
-            );
-
-            state = 'COMPLETED';
-          }
-          break;
-        }
-        case 'SEND': {
-          this.logger.log(
-            `[Crawler] User approved sending response for vacancy ${cardData.id}`,
-          );
-
-          await this.submitResponse(page, coverLetter);
-          await this.vacancyService.addVacancy({ id: cardData.id });
-
-          const successText = `\n\n✅✅✅ОСТАВЛЕН ОТКЛИК✅✅✅`;
-          cardData.coverLetter = cardData.coverLetter + successText;
-
-          await this.telegramNotify.updateVacancyCard(
-            this.tgConfig.CHAT_ID,
-            messageId,
-            cardData,
-          );
-
-          state = 'COMPLETED';
-          break;
-        }
-      }
-    }
-
-    if (hasQuestionnaire && cardData) {
-      this.logger.log(
-        `[Crawler] Vacancy ${cardData.id} has questionnaire, waiting for manual completion`,
-      );
-    }
-  }
-
-  private async openResponsePage(page: Page): Promise<void> {
-    const vacancyId = page.url().match(/\/vacancy\/(\d+)/)?.[1];
-    if (!vacancyId) {
-      this.logger.error(
-        '[Crawler] Could not extract vacancyId from URL',
-        new Error('vacancyId not found in URL'),
-      );
-      return;
-    }
-    const responseUrl = `${this.hhConfig.HH_MAIN_URL}/applicant/vacancy_response?vacancyId=${vacancyId}`;
-    await page.goto(responseUrl, { waitUntil: 'domcontentloaded' });
-  }
-
-  private async submitResponse(page: Page, coverLetter: string): Promise<void> {
-    const resumeDropdown = page
-      .locator(this.elementConfig.HH_RESUME_DROPDOWN_SELECTOR)
-      .first();
-    const currentResume = (await resumeDropdown.textContent())?.trim() ?? '';
-    const targetResume = this.settings.hh.resume_name;
-
-    if (currentResume !== targetResume) {
-      this.logger.log(
-        `[Crawler] Resume mismatch: current="${currentResume}", target="${targetResume}"`,
-      );
-      await resumeDropdown.click();
-      await new Promise((resolve) =>
-        setTimeout(resolve, this.hhConfig.HH_DROPDOWN_DELAY_MS),
-      );
-
-      const resumes = page.locator(this.elementConfig.HH_RESUME_DROPDOWN_NAME);
-      const resumesCount = await resumes.count();
-
-      let found = false;
-      for (let i = 0; i < resumesCount; i++) {
-        const resume = resumes.nth(i);
-        const text = (await resume.textContent())?.trim() ?? '';
-        if (text === targetResume) {
-          await resume.click();
-          found = true;
-          this.logger.log(`[Crawler] Selected resume: ${targetResume}`);
-          break;
-        }
-      }
-
-      if (!found) {
-        this.logger.error(
-          `[Crawler] Resume "${targetResume}" not found in dropdown`,
-          new Error('Resume not found'),
-        );
-        process.exit(1);
-      }
-    }
-
-    try {
-      const coverLetterTrigger = page.locator(
-        this.elementConfig.HH_APPLY_FORM_COVER_LETTER_TRIGGER,
-      );
-
-      await coverLetterTrigger.click();
-    } catch {
-      this.logger.warn(`[Crawler] Cover letter trigger not found`, {
-        action: 'coverLetterTrigger',
-        selector: this.elementConfig.HH_APPLY_FORM_COVER_LETTER_TRIGGER,
-      });
-    }
-
-    const textarea = page.locator(this.elementConfig.HH_APPLY_FORM_TEXTAREA);
-    await textarea.fill(coverLetter);
-
-    const submitButton = page.locator(
-      this.elementConfig.HH_APPLY_FORM_SUBMIT_BUTTON,
-    );
-    await submitButton.click();
-
-    await page.waitForLoadState('domcontentloaded');
-    this.logger.log(`[Crawler] Response submitted for vacancy`);
   }
 }
