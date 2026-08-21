@@ -123,12 +123,14 @@ export class HhCrawlerService {
       this.logger.log(
         `[Crawler] Vacancy ${vacancyId} approved by AI, proceeding to response`,
       );
-      await this.userInteraction.handleResponseFlow(
+      const action = await this.userInteraction.handleResponseFlow(
         detailedPage,
         vacancyData,
         candidate,
       );
-      await this.applyService.submitResponse(detailedPage, '');
+      if (action === 'SEND') {
+        await this.applyService.submitResponse(detailedPage, '');
+      }
     } catch (error) {
       this.logger.error(
         `[Crawler] Error processing vacancy item`,

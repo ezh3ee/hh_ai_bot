@@ -31,10 +31,8 @@ export class HhUserInteractionService {
     page: Page,
     vacancyData: Vacancy,
     candidate: Candidate,
-  ): Promise<void> {
+  ): Promise<'SEND' | 'REJECT' | 'TIMEOUT'> {
     let additionalInstructions = '';
-    let state: 'AWAITING_DECISION' | 'AWAITING_EDIT' | 'COMPLETED' =
-      'AWAITING_DECISION';
     let messageId: number | null = null;
     let hasQuestionnaire = false;
 
@@ -58,7 +56,7 @@ export class HhUserInteractionService {
       hasQuestionnaire: boolean;
     } | null = null;
 
-    while (state !== 'COMPLETED') {
+    while (true) {
       const coverLetter = await this.llmService.generateCoverLetter(
         vacancyData,
         candidate,
@@ -121,8 +119,7 @@ export class HhUserInteractionService {
           error instanceof Error ? error : new Error(String(error)),
         );
         await this.vacancyService.addVacancy({ id: cardData?.id ?? vacancyId });
-        state = 'COMPLETED';
-        break;
+        return 'TIMEOUT';
       }
 
       switch (action.type) {
@@ -141,8 +138,7 @@ export class HhUserInteractionService {
             cardData,
           );
 
-          state = 'COMPLETED';
-          break;
+          return 'REJECT';
         }
         case 'EDIT': {
           try {
@@ -160,16 +156,14 @@ export class HhUserInteractionService {
             this.logger.log(
               `[Interaction] Received edit instructions for vacancy ${cardData.id}`,
             );
-            state = 'AWAITING_DECISION';
+            continue;
           } catch (error) {
             this.logger.error(
               `[Interaction] Failed to get edit instructions for vacancy ${cardData.id}`,
               error instanceof Error ? error : new Error(String(error)),
             );
-
-            state = 'COMPLETED';
+            return 'TIMEOUT';
           }
-          break;
         }
         case 'SEND': {
           this.logger.log(
@@ -187,16 +181,9 @@ export class HhUserInteractionService {
             cardData,
           );
 
-          state = 'COMPLETED';
-          break;
+          return 'SEND';
         }
       }
-    }
-
-    if (hasQuestionnaire && cardData) {
-      this.logger.log(
-        `[Interaction] Vacancy ${cardData.id} has questionnaire, waiting for manual completion`,
-      );
     }
   }
 

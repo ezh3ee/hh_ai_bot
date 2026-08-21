@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { Page } from 'playwright';
-import hhElementsConfig from '../../config/hh.elements.config';
 import hhConfig, { type HhConfig } from '../../config/hh.config';
+import hhElementsConfig from '../../config/hh.elements.config';
 import mainConfig from '../../config/main.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
 import { LoggerService } from '../../logger/logger.service';
