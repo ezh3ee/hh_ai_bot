@@ -76,6 +76,8 @@ export class HhApplyService {
     const textarea = page.locator(this.elementConfig.HH_APPLY_FORM_TEXTAREA);
     await textarea.fill(coverLetter);
 
+    await new Promise((resolve) => setTimeout(resolve, 20000));
+
     if (!this.appConfig.TEST_MODE) {
       const submitButton = page.locator(
         this.elementConfig.HH_APPLY_FORM_SUBMIT_BUTTON,

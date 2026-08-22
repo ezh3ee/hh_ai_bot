@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { Locator, Page } from 'playwright';
-import hhElementsConfig from '../../config/hh.elements.config';
 import hhConfig, { type HhConfig } from '../../config/hh.config';
+import hhElementsConfig from '../../config/hh.elements.config';
 import telegramConfig from '../../config/telegram.config';
 import { LLMService } from '../../llm/llm.service';
 import { Candidate, Vacancy } from '../../llm/llm.types';
@@ -31,7 +31,7 @@ export class HhUserInteractionService {
     page: Page,
     vacancyData: Vacancy,
     candidate: Candidate,
-  ): Promise<'SEND' | 'REJECT' | 'TIMEOUT'> {
+  ): Promise<{ action: 'SEND' | 'REJECT' | 'TIMEOUT'; coverLetter: string }> {
     let additionalInstructions = '';
     let messageId: number | null = null;
     let hasQuestionnaire = false;
@@ -119,7 +119,7 @@ export class HhUserInteractionService {
           error instanceof Error ? error : new Error(String(error)),
         );
         await this.vacancyService.addVacancy({ id: cardData?.id ?? vacancyId });
-        return 'TIMEOUT';
+        return { action: 'TIMEOUT', coverLetter };
       }
 
       switch (action.type) {
@@ -138,7 +138,7 @@ export class HhUserInteractionService {
             cardData,
           );
 
-          return 'REJECT';
+          return { action: 'REJECT', coverLetter };
         }
         case 'EDIT': {
           try {
@@ -162,7 +162,8 @@ export class HhUserInteractionService {
               `[Interaction] Failed to get edit instructions for vacancy ${cardData.id}`,
               error instanceof Error ? error : new Error(String(error)),
             );
-            return 'TIMEOUT';
+
+            return { action: 'TIMEOUT', coverLetter };
           }
         }
         case 'SEND': {
@@ -181,7 +182,7 @@ export class HhUserInteractionService {
             cardData,
           );
 
-          return 'SEND';
+          return { action: 'SEND', coverLetter };
         }
       }
     }

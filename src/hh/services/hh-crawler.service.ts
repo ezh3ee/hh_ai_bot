@@ -1,18 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { Locator, Page } from 'playwright';
-import hhElementsConfig from '../../config/hh.elements.config';
 import hhConfig, { type HhConfig } from '../../config/hh.config';
+import hhElementsConfig from '../../config/hh.elements.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
-import { LoggerService } from '../../logger/logger.service';
-import { HhBrowserService } from './hh-browser.service';
-import { VacancyService } from '../../vacancy/vacancy.service';
 import { LLMService } from '../../llm/llm.service';
-import { VacancyFilterService } from './vacancy-filter.service';
-import { HhPageNavigatorService } from './hh-page-navigator.service';
-import { HhApplyService } from './hh-apply.service';
-import { HhUserInteractionService } from './hh-user-interaction.service';
 import { Candidate, Vacancy } from '../../llm/llm.types';
+import { LoggerService } from '../../logger/logger.service';
+import { VacancyService } from '../../vacancy/vacancy.service';
+import { HhApplyService } from './hh-apply.service';
+import { HhBrowserService } from './hh-browser.service';
+import { HhPageNavigatorService } from './hh-page-navigator.service';
+import { HhUserInteractionService } from './hh-user-interaction.service';
+import { VacancyFilterService } from './vacancy-filter.service';
 
 @Injectable()
 export class HhCrawlerService {
@@ -126,13 +126,16 @@ export class HhCrawlerService {
       this.logger.log(
         `[Crawler] Vacancy ${vacancyId} approved by AI, proceeding to response`,
       );
-      const action = await this.userInteraction.handleResponseFlow(
+      const result = await this.userInteraction.handleResponseFlow(
         detailedPage,
         vacancyData,
         candidate,
       );
-      if (action === 'SEND') {
-        await this.applyService.submitResponse(detailedPage, '');
+      if (result.action === 'SEND') {
+        await this.applyService.submitResponse(
+          detailedPage,
+          result.coverLetter,
+        );
       }
     } catch (error) {
       this.logger.error(

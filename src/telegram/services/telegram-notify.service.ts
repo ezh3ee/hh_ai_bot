@@ -25,7 +25,9 @@ export class TelegramNotifyService {
         text,
         replyToMessageId !== undefined && replyToMessageId !== null
           ? {
-              reply_parameters: { message_id: replyToMessageId },
+              reply_parameters: {
+                message_id: replyToMessageId,
+              },
             }
           : {},
       );
@@ -73,6 +75,7 @@ export class TelegramNotifyService {
       await this.bot.api.editMessageText(chatId, messageId, text, {
         parse_mode,
         reply_markup,
+        link_preview_options: { is_disabled: true },
       });
     } catch (error) {
       if (error instanceof GrammyError) {
