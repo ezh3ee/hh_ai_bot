@@ -120,7 +120,10 @@ export class HhUserInteractionService {
           `[Interaction] Telegram wait timeout for vacancy ${cardData?.id ?? vacancyId}`,
           error instanceof Error ? error : new Error(String(error)),
         );
-        await this.vacancyService.addVacancy({ id: cardData?.id ?? vacancyId });
+        await this.vacancyService.addVacancy({
+          id: cardData?.id ?? vacancyId,
+          reason: 'REJECTED',
+        });
         return { action: 'TIMEOUT', coverLetter };
       }
 
@@ -134,7 +137,10 @@ export class HhUserInteractionService {
             return { action: 'TIMEOUT', coverLetter };
           }
 
-          await this.vacancyService.addVacancy({ id: cardData.id });
+          await this.vacancyService.addVacancy({
+            id: cardData.id,
+            reason: 'REJECTED',
+          });
           this.logger.log(
             `[Interaction] Vacancy ${cardData.id} rejected by user, saved to DB`,
           );
@@ -181,7 +187,10 @@ export class HhUserInteractionService {
             `[Interaction] User approved sending response for vacancy ${cardData.id}`,
           );
 
-          await this.vacancyService.addVacancy({ id: cardData.id });
+          await this.vacancyService.addVacancy({
+            id: cardData.id,
+            reason: 'SENT',
+          });
 
           const successText = `\n\n✅✅✅ОСТАВЛЕН ОТКЛИК✅✅✅`;
           cardData.coverLetter = cardData.coverLetter + successText;

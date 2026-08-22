@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { Locator, Page } from 'playwright';
-import hhElementsConfig from '../../config/hh.elements.config';
 import hhConfig, { type HhConfig } from '../../config/hh.config';
+import hhElementsConfig from '../../config/hh.elements.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
 import { LoggerService } from '../../logger/logger.service';
 import { HhBrowserService } from './hh-browser.service';
@@ -76,6 +76,7 @@ export class HhPageNavigatorService {
     const baseUrl = this.hhConfig.HH_MAIN_URL;
     const encodedKeyword = encodeURIComponent(keyword);
     const workFormat = this.settings.candidate.work_format ?? [];
+    const experience = this.settings.hh.experience ?? [];
 
     let url = `${baseUrl}/search/vacancy?text=${encodedKeyword}&area=${area}`;
 
@@ -85,6 +86,12 @@ export class HhPageNavigatorService {
 
     if (pageNum > 0) {
       url += `&page=${pageNum}`;
+    }
+
+    if (experience.length > 0) {
+      for (const exp of experience) {
+        url += `&experience=${exp}`;
+      }
     }
 
     return url;

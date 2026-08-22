@@ -77,7 +77,10 @@ export class HhCrawlerService {
     }
 
     if (await this.pageNavigator.checkStopWordsOnItem(item)) {
-      await this.vacancyService.addVacancy({ id: vacancyId });
+      await this.vacancyService.addVacancy({
+        id: vacancyId,
+        reason: 'REJECTED',
+      });
       this.logger.log(
         `[Crawler] Vacancy ${vacancyId} filtered by stop words, saved to DB`,
       );
@@ -114,7 +117,10 @@ export class HhCrawlerService {
       );
 
       if (analysisResult === 'NO') {
-        await this.vacancyService.addVacancy({ id: vacancyId });
+        await this.vacancyService.addVacancy({
+          id: vacancyId,
+          reason: 'REJECTED',
+        });
         this.logger.log(
           `[Crawler] Vacancy ${vacancyId} rejected by AI, saved to DB`,
         );
