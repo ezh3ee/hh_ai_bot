@@ -2,11 +2,13 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { LoggerService } from '../../logger/logger.service';
 import { LoginResult } from '../hh.types';
 import { HhFlowService } from './hh-flow.service';
+import { HhCrawlerService } from './hh-crawler.service';
 
 @Injectable()
 export class HhEntryService implements OnApplicationBootstrap {
   constructor(
     private readonly flowService: HhFlowService,
+    private readonly crawlerService: HhCrawlerService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -19,6 +21,7 @@ export class HhEntryService implements OnApplicationBootstrap {
       this.logger.log(
         `Login successful: ${result.message} (mode: ${result.mode})`,
       );
+      await this.crawlerService.crawl();
     } else {
       this.logger.error(
         'Login failed',

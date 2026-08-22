@@ -6,7 +6,7 @@ const CommonFields = z.object({
   LLM_TEMPERATURE_COVER_LETTER: z.coerce.number().min(0).max(2).optional(),
   LLM_MAX_TOKENS_ANALYSIS: z.coerce.number().positive().optional(),
   LLM_MAX_TOKENS_COVER_LETTER: z.coerce.number().positive().optional(),
-  LLM_TIMEOUT_MS: z.coerce.number().positive().default(60000),
+  LLM_TIMEOUT_MS: z.coerce.number().positive().default(300000),
   LLM_MAX_RETRIES: z.coerce.number().int().positive().default(3),
 });
 

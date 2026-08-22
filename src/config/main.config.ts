@@ -4,6 +4,7 @@ import { z, ZodError } from 'zod';
 const mainConfigSchema = z.object({
   HH_HEADLESS: z.coerce.boolean().default(false),
   DATABASE_URL: z.string(),
+  TEST_MODE: z.coerce.boolean(),
 });
 
 export type MainConfig = z.infer<typeof mainConfigSchema>;

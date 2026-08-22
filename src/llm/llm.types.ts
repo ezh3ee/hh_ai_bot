@@ -21,7 +21,7 @@ export interface Candidate {
       role: string;
       period: string;
       type: string;
-      url: string;
+      url?: string | null;
       stack: string[];
       description: string;
     }

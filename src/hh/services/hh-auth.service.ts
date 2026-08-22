@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { Page } from 'playwright';
 import hhElementsConfig from '../../config/hh.elements.config';
-import hhUrlConfig from '../../config/hh.url.config';
+import hhConfig from '../../config/hh.config';
 import { LoggerService } from '../../logger/logger.service';
 import { HhBrowserService } from './hh-browser.service';
 import { HhSessionService } from './hh.session.service';
@@ -10,8 +10,8 @@ import { HhSessionService } from './hh.session.service';
 @Injectable()
 export class HhAuthService {
   constructor(
-    @Inject(hhUrlConfig.KEY)
-    private readonly urlConfig: ConfigType<typeof hhUrlConfig>,
+    @Inject(hhConfig.KEY)
+    private readonly urlConfig: ConfigType<typeof hhConfig>,
     @Inject(hhElementsConfig.KEY)
     private readonly elementConfig: ConfigType<typeof hhElementsConfig>,
     private readonly sessionService: HhSessionService,

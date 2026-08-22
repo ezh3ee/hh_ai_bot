@@ -33,6 +33,9 @@ candidate:
 
 hh:
   resume_name: 'Backend-developer' # Точное название резюме *
+  experience: # Опыт работы * [noExperience, between1And3, between3And6]
+    - 'noExperience'
+    - 'between1And3'
   search_queries: # Поисковые запросы *
     - 'Node backend'
     - 'Node.js backend'

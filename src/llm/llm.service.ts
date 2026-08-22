@@ -30,7 +30,12 @@ export class LLMService implements OnModuleInit {
   async generateCoverLetter(
     vacancy: Vacancy,
     candidate: Candidate,
+    additionalInstructions?: string,
   ): Promise<string> {
-    return this.provider.generateCoverLetter(vacancy, candidate);
+    return this.provider.generateCoverLetter(
+      vacancy,
+      candidate,
+      additionalInstructions,
+    );
   }
 }
