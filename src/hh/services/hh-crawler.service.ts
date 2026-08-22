@@ -219,6 +219,10 @@ export class HhCrawlerService {
     }
   }
 
+  /**
+   * TODO: я думаю, что нужно кэшировать, потому что кандидат у нас один на весь жизненный цикл
+   * можно перенести как-то в onModuleInit и дёргать оттуда
+   */
   private buildCandidate(): Candidate {
     const candidateSettings = this.settings.candidate;
     return {

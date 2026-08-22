@@ -36,6 +36,17 @@ export class OllamaProvider extends BaseLLMProvider {
       this.config.LLM_TIMEOUT_MS,
     );
 
+    console.log('Asking Ollama...');
+    console.log(
+      'this.config.LLM_TEMPERATURE_ANALYSIS ',
+      this.config.LLM_TEMPERATURE_ANALYSIS,
+    );
+    console.log(
+      'this.config.LLM_MAX_TOKENS_ANALYSIS ',
+      this.config.LLM_MAX_TOKENS_ANALYSIS,
+    );
+    console.log('prompt ', prompt);
+
     try {
       const res = await fetch(`${this.url}/api/chat`, {
         method: 'POST',

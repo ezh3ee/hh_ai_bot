@@ -2,6 +2,8 @@ import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import telegramConfig from '../../config/telegram.config';
 
+// TODO: перенести state в Redis в будущем
+
 type ActionType = 'SEND' | 'REJECT' | 'EDIT';
 
 interface ActionResult {

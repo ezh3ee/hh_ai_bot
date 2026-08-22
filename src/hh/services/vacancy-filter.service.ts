@@ -9,6 +9,7 @@ export class VacancyFilterService {
     private readonly logger: LoggerService,
   ) {}
 
+  // TODO: тут нужно наверное переделать на регулярки. ибо будет срабатывать на слова, которые не нужно срабатывать
   checkStopWords(text: string): boolean {
     const stopWords = this.settings.hh.stop_words ?? [];
     if (stopWords.length === 0) {
