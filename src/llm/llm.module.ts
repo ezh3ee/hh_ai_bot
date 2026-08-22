@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { SettingsConfigService } from '../config/settings/settings-config.service';
-import { LoggerService } from '../logger/logger.service';
 import { LLMFactory } from './llm.factory';
 import { LLMService } from './llm.service';
 import { OllamaProvider } from './providers/ollama.provider';
 import { OpenAICompatibleProvider } from './providers/openai-compatible.provider';
+import { LoggerModule } from '../logger/logger.module';
 
 @Module({
   providers: [
@@ -13,8 +13,8 @@ import { OpenAICompatibleProvider } from './providers/openai-compatible.provider
     OllamaProvider,
     OpenAICompatibleProvider,
     SettingsConfigService,
-    LoggerService,
   ],
+  imports: [LoggerModule],
   exports: [LLMService],
 })
 export class LlmModule {}
