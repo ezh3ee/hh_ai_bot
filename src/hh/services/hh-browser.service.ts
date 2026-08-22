@@ -39,6 +39,10 @@ export class HhBrowserService implements OnModuleDestroy {
   }
 
   async createContext(storageState?: StorageState): Promise<BrowserContext> {
+    if (this.context) {
+      await this.context.close().catch(() => {});
+    }
+
     const browser = await this.getOrCreateBrowser();
 
     this.context = await browser.newContext({

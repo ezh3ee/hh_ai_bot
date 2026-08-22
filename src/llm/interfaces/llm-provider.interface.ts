@@ -9,6 +9,22 @@ export interface AskOptions {
   maxTokens?: number;
 }
 
+export type CoverLetterTemplate = {
+  basePrompt: string;
+  vacancyTitle: string;
+  vacancyDescription: string;
+  candidateExperienceSummary: string;
+  projects: string;
+  additionalInstructions: string;
+};
+
+export type AnalysisTemplate = {
+  basePrompt: string;
+  vacancyDescription: string;
+  candidateExperienceSummary: string;
+  projects: string;
+};
+
 export type LlmProviderConfig = ConfigType<typeof llmConfig>;
 
 export abstract class BaseLLMProvider {
@@ -35,7 +51,7 @@ export abstract class BaseLLMProvider {
         askOptions.maxTokens = this.config.LLM_MAX_TOKENS_ANALYSIS;
       }
 
-      const answer = await this.ask(prompt, askOptions);
+      const answer = await this.ask(JSON.stringify(prompt), askOptions);
 
       const cleaned = answer.trim().toUpperCase();
       if (cleaned === 'YES' || cleaned === 'NO') {
@@ -74,10 +90,14 @@ export abstract class BaseLLMProvider {
     if (this.config.LLM_MAX_TOKENS_COVER_LETTER !== undefined) {
       askOptions.maxTokens = this.config.LLM_MAX_TOKENS_COVER_LETTER;
     }
-    return this.ask(prompt, askOptions);
+
+    return this.ask(JSON.stringify(prompt), askOptions);
   }
 
-  protected buildAnalysisPrompt(text: string, candidate: Candidate): string {
+  protected buildAnalysisPrompt(
+    text: string,
+    candidate: Candidate,
+  ): AnalysisTemplate {
     const basePrompt = this.settings.aiInstructions.is_suitable;
     const projects = candidate.projects
       ? Object.values(candidate.projects)
@@ -86,14 +106,20 @@ export abstract class BaseLLMProvider {
           )
           .join('\n')
       : 'Нет проектов';
-    return `${basePrompt}\n\nВАКАНСИЯ:\n${text}\nРезюме: ${candidate.experience_summary}\n\nМОИ ПРОЕКТЫ:\n${projects}`;
+
+    return {
+      basePrompt,
+      vacancyDescription: text,
+      candidateExperienceSummary: candidate.experience_summary,
+      projects,
+    };
   }
 
   protected buildCoverLetterPrompt(
     vacancy: Vacancy,
     candidate: Candidate,
     additionalInstructions?: string,
-  ): string {
+  ): CoverLetterTemplate {
     const basePrompt = this.settings.aiInstructions.cover_letter;
     const projects = candidate.projects
       ? Object.values(candidate.projects)
@@ -107,15 +133,16 @@ export abstract class BaseLLMProvider {
       : 'Нет проектов';
 
     const instructions = additionalInstructions
-      ? `\n\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ: ${additionalInstructions}`
+      ? `\n\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ. ПРИОРИТЕТ!!!!: ${additionalInstructions}`
       : '';
 
-    return `${instructions}
-    ${basePrompt}
-    ${candidate.experience_summary}
-    \n\nВАКАНСИЯ:\nНазвание: ${vacancy.title}
-    \nОписание: ${vacancy.description}
-    \nРезюме: ${candidate.experience_summary}
-    \n\nМОИ ПРОЕКТЫ:\n${projects}`;
+    return {
+      basePrompt,
+      vacancyTitle: vacancy.title,
+      vacancyDescription: vacancy.description,
+      candidateExperienceSummary: candidate.experience_summary,
+      projects,
+      additionalInstructions: instructions,
+    };
   }
 }

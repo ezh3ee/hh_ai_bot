@@ -21,6 +21,15 @@ export class HhApplyService {
   ) {}
 
   async submitResponse(page: Page, coverLetter: string): Promise<void> {
+    await this.ensureCorrectResume(page);
+    await this.fillTextarea(page, coverLetter);
+    await this.submit(page);
+
+    await page.waitForLoadState('domcontentloaded');
+    this.logger.log(`[Apply] Response submitted`);
+  }
+
+  private async ensureCorrectResume(page: Page): Promise<void> {
     const resumeDropdown = page
       .locator(this.elementConfig.HH_RESUME_DROPDOWN_SELECTOR)
       .first();
@@ -59,7 +68,9 @@ export class HhApplyService {
         process.exit(1);
       }
     }
+  }
 
+  private async fillTextarea(page: Page, coverLetter: string): Promise<void> {
     try {
       const coverLetterTrigger = page.locator(
         this.elementConfig.HH_APPLY_FORM_COVER_LETTER_TRIGGER,
@@ -75,28 +86,15 @@ export class HhApplyService {
 
     const textarea = page.locator(this.elementConfig.HH_APPLY_FORM_TEXTAREA);
     await textarea.fill(coverLetter);
+  }
 
+  private async submit(page: Page): Promise<void> {
     if (!this.appConfig.TEST_MODE) {
       const submitButton = page.locator(
         this.elementConfig.HH_APPLY_FORM_SUBMIT_BUTTON,
       );
+
       await submitButton.click();
     }
-
-    await page.waitForLoadState('domcontentloaded');
-    this.logger.log(`[Apply] Response submitted`);
-  }
-
-  async openResponsePage(page: Page): Promise<void> {
-    const vacancyId = page.url().match(/\/vacancy\/(\d+)/)?.[1];
-    if (!vacancyId) {
-      this.logger.error(
-        '[Apply] Could not extract vacancyId from URL',
-        new Error('vacancyId not found in URL'),
-      );
-      return;
-    }
-    const responseUrl = `${this.hhConfig.HH_MAIN_URL}/applicant/vacancy_response?vacancyId=${vacancyId}`;
-    await page.goto(responseUrl, { waitUntil: 'domcontentloaded' });
   }
 }

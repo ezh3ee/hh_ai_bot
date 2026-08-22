@@ -12,7 +12,6 @@ import { HhApplyService } from './hh-apply.service';
 import { HhBrowserService } from './hh-browser.service';
 import { HhPageNavigatorService } from './hh-page-navigator.service';
 import { HhUserInteractionService } from './hh-user-interaction.service';
-import { VacancyFilterService } from './vacancy-filter.service';
 
 @Injectable()
 export class HhCrawlerService {
@@ -28,7 +27,6 @@ export class HhCrawlerService {
     private readonly pageNavigator: HhPageNavigatorService,
     private readonly applyService: HhApplyService,
     private readonly userInteraction: HhUserInteractionService,
-    private readonly filterService: VacancyFilterService,
     private readonly logger: LoggerService,
   ) {}
 

@@ -10,6 +10,7 @@ import { LoggerService } from '../../logger/logger.service';
 import { TelegramNotifyService } from '../../telegram/services/telegram-notify.service';
 import { TelegramWaitService } from '../../telegram/services/telegram-wait.service';
 import { VacancyService } from '../../vacancy/vacancy.service';
+import { HhApplyService } from './hh-apply.service';
 
 @Injectable()
 export class HhUserInteractionService {
@@ -24,6 +25,7 @@ export class HhUserInteractionService {
     private readonly telegramNotify: TelegramNotifyService,
     private readonly telegramWait: TelegramWaitService,
     private readonly vacancyService: VacancyService,
+    private readonly applyService: HhApplyService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -36,11 +38,13 @@ export class HhUserInteractionService {
     let messageId: number | null = null;
     let hasQuestionnaire = false;
 
-    const vacancyId = vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1]
-      ? parseInt(vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1] ?? '0', 10)
-      : 0;
+    // const vacancyId = vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1]
+    //   ? parseInt(vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1] ?? '0', 10)
+    //   : 0;
 
-    await this.openResponsePage(page);
+    const vacancyId = parseInt(vacancyData.id ? vacancyData.id : '0', 10);
+
+    await this.openResponsePage(page, vacancyId);
     await page.waitForLoadState('domcontentloaded');
     await new Promise((resolve) =>
       setTimeout(resolve, this.hhConfig.HH_PAGE_LOAD_DELAY_MS),
@@ -64,11 +68,9 @@ export class HhUserInteractionService {
       );
 
       let additionalForm: Locator | null = null;
-      try {
-        additionalForm = page.locator(this.elementConfig.HH_IS_ADDITIONAL_FORM);
-      } catch {
-        this.logger.log(`[Interaction] Additional form not found`);
-      }
+
+      additionalForm = page.locator(this.elementConfig.HH_IS_ADDITIONAL_FORM);
+      // this.logger.log(`[Interaction] Additional form not found`);
 
       hasQuestionnaire = additionalForm
         ? (await additionalForm.count()) > 0
@@ -124,18 +126,26 @@ export class HhUserInteractionService {
 
       switch (action.type) {
         case 'REJECT': {
+          if (!cardData) {
+            this.logger.error(
+              `[Interaction] Vacancy ${vacancyId} not card data found. Timeout.`,
+              new Error('Vacancy card data timeout'),
+            );
+            return { action: 'TIMEOUT', coverLetter };
+          }
+
           await this.vacancyService.addVacancy({ id: cardData.id });
           this.logger.log(
             `[Interaction] Vacancy ${cardData.id} rejected by user, saved to DB`,
           );
 
           const successText = `\n\n❌❌❌ВАКАНСИЯ ОТКЛОНЕНА❌❌❌`;
-          cardData.coverLetter = cardData.coverLetter + successText;
+          const displayedCoverLetter = cardData.coverLetter + successText;
 
           await this.telegramNotify.updateVacancyCard(
             this.tgConfig.CHAT_ID,
             messageId,
-            cardData,
+            { ...cardData, coverLetter: displayedCoverLetter },
           );
 
           return { action: 'REJECT', coverLetter };
@@ -188,11 +198,10 @@ export class HhUserInteractionService {
     }
   }
 
-  private async openResponsePage(page: Page): Promise<void> {
-    const vacancyId = page.url().match(/\/vacancy\/(\d+)/)?.[1];
+  private async openResponsePage(page: Page, vacancyId: number): Promise<void> {
     if (!vacancyId) {
       this.logger.error(
-        '[Interaction] Could not extract vacancyId from URL',
+        `[Intercation] Could not extract vacancyId from URL`,
         new Error('vacancyId not found in URL'),
       );
       return;
