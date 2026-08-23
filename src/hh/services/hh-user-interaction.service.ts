@@ -38,10 +38,6 @@ export class HhUserInteractionService {
     let messageId: number | null = null;
     let hasQuestionnaire = false;
 
-    // const vacancyId = vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1]
-    //   ? parseInt(vacancyData.url.match(/\/vacancy\/(\d+)/)?.[1] ?? '0', 10)
-    //   : 0;
-
     const vacancyId = parseInt(vacancyData.id ? vacancyData.id : '0', 10);
 
     await this.openResponsePage(page, vacancyId);
@@ -70,7 +66,6 @@ export class HhUserInteractionService {
       let additionalForm: Locator | null = null;
 
       additionalForm = page.locator(this.elementConfig.HH_IS_ADDITIONAL_FORM);
-      // this.logger.log(`[Interaction] Additional form not found`);
 
       hasQuestionnaire = additionalForm
         ? (await additionalForm.count()) > 0
