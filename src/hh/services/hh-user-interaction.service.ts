@@ -10,7 +10,6 @@ import { LoggerService } from '../../logger/logger.service';
 import { TelegramNotifyService } from '../../telegram/services/telegram-notify.service';
 import { TelegramWaitService } from '../../telegram/services/telegram-wait.service';
 import { VacancyService } from '../../vacancy/vacancy.service';
-import { HhApplyService } from './hh-apply.service';
 
 @Injectable()
 export class HhUserInteractionService {
@@ -25,7 +24,6 @@ export class HhUserInteractionService {
     private readonly telegramNotify: TelegramNotifyService,
     private readonly telegramWait: TelegramWaitService,
     private readonly vacancyService: VacancyService,
-    private readonly applyService: HhApplyService,
     private readonly logger: LoggerService,
   ) {}
 

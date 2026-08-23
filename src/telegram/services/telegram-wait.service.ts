@@ -114,14 +114,3 @@ export class TelegramWaitService implements OnModuleDestroy {
     this.textWaiters.clear();
   }
 }
-
-interface Pending<T> {
-  resolve: (v: T) => void;
-  reject: (e: Error) => void;
-  timeout: NodeJS.Timeout;
-}
-
-interface ActionResult {
-  type: 'SEND' | 'REJECT' | 'EDIT';
-  vacancyId: number | null;
-}

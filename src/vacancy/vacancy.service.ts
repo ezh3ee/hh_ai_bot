@@ -23,20 +23,13 @@ export class VacancyService {
           return null;
         }
 
-        this.logger.error(
-          `Prisma error adding vacancy ${vacancy.id}`,
-          e.message,
-          {
-            action: 'addVacancy',
-          },
-        );
+        this.logger.error(`Prisma error adding vacancy ${vacancy.id}`, e, {
+          action: 'addVacancy',
+        });
       } else {
-        const errorMessage = e instanceof Error ? e.message : String(e);
-        this.logger.error(
-          `Unexpected error adding vacancy ${vacancy.id}`,
-          errorMessage,
-          { action: 'addVacancy' },
-        );
+        this.logger.error(`Unexpected error adding vacancy ${vacancy.id}`, e, {
+          action: 'addVacancy',
+        });
       }
 
       throw e;
@@ -63,18 +56,13 @@ export class VacancyService {
           return null;
         }
 
-        this.logger.error(`Prisma error deleting vacancy ${id}`, e.message, {
+        this.logger.error(`Prisma error deleting vacancy ${id}`, e, {
           action: 'deleteVacancy',
         });
       } else {
-        const errorMessage = e instanceof Error ? e.message : String(e);
-        this.logger.error(
-          `Unexpected error deleting vacancy ${id}`,
-          errorMessage,
-          {
-            action: 'deleteVacancy',
-          },
-        );
+        this.logger.error(`Unexpected error deleting vacancy ${id}`, e, {
+          action: 'deleteVacancy',
+        });
       }
 
       return null;

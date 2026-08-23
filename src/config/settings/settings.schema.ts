@@ -21,13 +21,21 @@ const CandidateSchema = z.object({
   experience_summary: z.string().min(1),
 });
 
+const HhExperienceEnum = z.enum([
+  'noExperience',
+  'between1And3',
+  'between3And6',
+]);
+
 const HhSchema = z.object({
   resume_name: z.string().min(1),
   search_queries: z.array(z.string()).min(1),
   areas: z.array(z.string()).min(1),
   stop_words: z.array(z.string()).optional(),
-  experience: z.array(z.string()).optional(),
+  experience: z.array(HhExperienceEnum).optional(),
 });
+
+export type HhExperience = z.infer<typeof HhExperienceEnum>;
 
 const AiInstructionsSchema = z.object({
   is_suitable: z.string().min(1),
