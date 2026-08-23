@@ -9,7 +9,6 @@ export class VacancyFilterService {
     private readonly logger: LoggerService,
   ) {}
 
-  // TODO: тут нужно наверное переделать на регулярки. ибо будет срабатывать на слова, которые не нужно срабатывать
   checkStopWords(text: string): boolean {
     const stopWords = this.settings.hh.stop_words ?? [];
     if (stopWords.length === 0) {
@@ -18,7 +17,8 @@ export class VacancyFilterService {
 
     const lowerText = text.toLowerCase();
     for (const word of stopWords) {
-      if (lowerText.includes(word.toLowerCase())) {
+      const regex = new RegExp(`\\b${word.toLowerCase()}\\b`, 'i');
+      if (regex.test(lowerText)) {
         this.logger.log(`[Filter] Stop word found: "${word}"`);
         return true;
       }

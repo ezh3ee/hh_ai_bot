@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { Locator, Page } from 'playwright';
 import hhConfig, { type HhConfig } from '../../config/hh.config';
@@ -14,7 +14,9 @@ import { HhPageNavigatorService } from './hh-page-navigator.service';
 import { HhUserInteractionService } from './hh-user-interaction.service';
 
 @Injectable()
-export class HhCrawlerService {
+export class HhCrawlerService implements OnModuleInit {
+  private candidate: Candidate | null = null;
+
   constructor(
     @Inject(hhConfig.KEY)
     private readonly hhConfig: HhConfig,
@@ -29,6 +31,11 @@ export class HhCrawlerService {
     private readonly userInteraction: HhUserInteractionService,
     private readonly logger: LoggerService,
   ) {}
+
+  onModuleInit(): void {
+    this.candidate = this.buildCandidate();
+    this.logger.log('[Crawler] Candidate cached on module init');
+  }
 
   async crawl(): Promise<void> {
     this.validateSettings();
@@ -109,7 +116,7 @@ export class HhCrawlerService {
         return;
       }
 
-      const candidate = this.buildCandidate();
+      const candidate = this.candidate!;
 
       const analysisResult = await this.llmService.analyzeVacancy(
         vacancyData.description,
@@ -219,10 +226,6 @@ export class HhCrawlerService {
     }
   }
 
-  /**
-   * TODO: я думаю, что нужно кэшировать, потому что кандидат у нас один на весь жизненный цикл
-   * можно перенести как-то в onModuleInit и дёргать оттуда
-   */
   private buildCandidate(): Candidate {
     const candidateSettings = this.settings.candidate;
     return {

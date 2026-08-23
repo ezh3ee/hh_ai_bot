@@ -4,7 +4,6 @@ import hhElementsConfig from './config/hh.elements.config';
 import hhConfig from './config/hh.config';
 import llmConfig from './config/llm.config';
 import mainConfig from './config/main.config';
-import { SettingsConfigService } from './config/settings/settings-config.service';
 import settingsConfig from './config/settings/settings.config';
 import telegramConfig from './config/telegram.config';
 import { HhModule } from './hh/hh.module';
@@ -34,6 +33,5 @@ import { PrismaModule } from './prisma/prisma.module';
     VacancyModule,
     PrismaModule,
   ],
-  providers: [SettingsConfigService],
 })
 export class AppModule {}
