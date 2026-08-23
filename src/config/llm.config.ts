@@ -36,6 +36,15 @@ const PolzaConfig = z
   })
   .merge(CommonFields);
 
+const GroqConfig = z
+  .object({
+    LLM_PROVIDER: z.literal('groq'),
+    GROQ_API_KEY: z.string(),
+    GROQ_BASE_URL: z.url().default('https://api.groq.com/openai/v1/'),
+    GROQ_MODEL: z.string().default('openai/gpt-oss-120b'),
+  })
+  .merge(CommonFields);
+
 const OpenAICompatibleConfig = z
   .object({
     LLM_PROVIDER: z.literal('openai-compatible'),
@@ -50,12 +59,13 @@ export const llmConfigSchema = z.discriminatedUnion('LLM_PROVIDER', [
   OpenRouterConfig,
   PolzaConfig,
   OpenAICompatibleConfig,
+  GroqConfig,
 ]);
 
 export type LlmConfig = z.infer<typeof llmConfigSchema>;
 
 export type OpenAiLike = {
-  provider: 'openrouter' | 'polza' | 'openai-compatible';
+  provider: 'openrouter' | 'polza' | 'openai-compatible' | 'groq';
   baseURL: string;
   apiKey: string;
   model: string;
@@ -83,6 +93,13 @@ export function toOpenAiLike(cfg: LlmConfig): OpenAiLike {
         baseURL: cfg.OPENAI_COMPATIBLE_BASE_URL,
         apiKey: cfg.OPENAI_COMPATIBLE_API_KEY,
         model: cfg.OPENAI_COMPATIBLE_MODEL,
+      };
+    case 'groq':
+      return {
+        provider: cfg.LLM_PROVIDER,
+        baseURL: cfg.GROQ_BASE_URL,
+        apiKey: cfg.GROQ_API_KEY,
+        model: cfg.GROQ_MODEL,
       };
     case 'ollama':
       throw new Error('ollama идёт через OllamaProvider');

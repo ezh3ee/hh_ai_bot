@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import llmConfig from '../../config/llm.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
@@ -9,7 +9,6 @@ import {
 } from '../interfaces/llm-provider.interface';
 import { isOllamaChatResponse } from '../ollama-response.schema';
 
-@Injectable()
 export class OllamaProvider extends BaseLLMProvider {
   private readonly url: string;
   private readonly model: string;

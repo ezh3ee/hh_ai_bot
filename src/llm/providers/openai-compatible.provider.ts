@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { OpenAI } from 'openai';
 import llmConfig, { OpenAiLike } from '../../config/llm.config';
@@ -9,7 +9,6 @@ import {
   BaseLLMProvider,
 } from '../interfaces/llm-provider.interface';
 
-@Injectable()
 export class OpenAICompatibleProvider extends BaseLLMProvider {
   private client: OpenAI | null = null;
   private model: string | null = null;
