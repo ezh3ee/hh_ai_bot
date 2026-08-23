@@ -27,9 +27,14 @@ export class VacancyService {
           action: 'addVacancy',
         });
       } else {
-        this.logger.error(`Unexpected error adding vacancy ${vacancy.id}`, e, {
-          action: 'addVacancy',
-        });
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        this.logger.error(
+          `Unexpected error adding vacancy ${vacancy.id}`,
+          errorMessage,
+          {
+            action: 'addVacancy',
+          },
+        );
       }
 
       throw e;
@@ -60,9 +65,14 @@ export class VacancyService {
           action: 'deleteVacancy',
         });
       } else {
-        this.logger.error(`Unexpected error deleting vacancy ${id}`, e, {
-          action: 'deleteVacancy',
-        });
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        this.logger.error(
+          `Unexpected error deleting vacancy ${id}`,
+          errorMessage,
+          {
+            action: 'deleteVacancy',
+          },
+        );
       }
 
       return null;
