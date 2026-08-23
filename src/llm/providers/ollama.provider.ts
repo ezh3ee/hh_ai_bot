@@ -1,6 +1,7 @@
 import { Inject } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import llmConfig from '../../config/llm.config';
+import { SettingsConfigService } from '../../config/settings/settings-config.service';
 import { LoggerService } from '../../logger/logger.service';
 import {
   AskOptions,
@@ -15,9 +16,10 @@ export class OllamaProvider extends BaseLLMProvider {
   constructor(
     @Inject(llmConfig.KEY)
     config: ConfigType<typeof llmConfig>,
+    settings: SettingsConfigService,
     logger: LoggerService,
   ) {
-    super(config, undefined as any, logger);
+    super(config, settings, logger);
     if (config.LLM_PROVIDER !== 'ollama') {
       throw new Error('OllamaProvider requires LLM_PROVIDER=ollama');
     }

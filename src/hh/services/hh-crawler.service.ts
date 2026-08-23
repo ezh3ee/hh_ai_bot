@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { Locator, Page } from 'playwright';
 import hhConfig, { type HhConfig } from '../../config/hh.config';
@@ -14,8 +14,8 @@ import { HhPageNavigatorService } from './hh-page-navigator.service';
 import { HhUserInteractionService } from './hh-user-interaction.service';
 
 @Injectable()
-export class HhCrawlerService implements OnModuleInit {
-  private candidate: Candidate | null = null;
+export class HhCrawlerService {
+  private readonly candidate: Candidate;
 
   constructor(
     @Inject(hhConfig.KEY)
@@ -30,11 +30,8 @@ export class HhCrawlerService implements OnModuleInit {
     private readonly applyService: HhApplyService,
     private readonly userInteraction: HhUserInteractionService,
     private readonly logger: LoggerService,
-  ) {}
-
-  onModuleInit(): void {
+  ) {
     this.candidate = this.buildCandidate();
-    this.logger.log('[Crawler] Candidate cached on module init');
   }
 
   async crawl(): Promise<void> {
@@ -116,7 +113,7 @@ export class HhCrawlerService implements OnModuleInit {
         return;
       }
 
-      const candidate = this.candidate!;
+      const candidate = this.candidate;
 
       const analysisResult = await this.llmService.analyzeVacancy(
         vacancyData.description,

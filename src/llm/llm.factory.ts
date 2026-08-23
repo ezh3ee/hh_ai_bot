@@ -22,16 +22,18 @@ export class LLMFactory {
     switch (provider) {
       case 'ollama':
         this.logger.log(`LLM Provider: ollama (${cfg.OLLAMA_MODEL})`);
-        return new OllamaProvider(cfg, this.logger);
+        return new OllamaProvider(cfg, this.settings, this.logger);
       case 'openrouter':
       case 'polza':
       case 'groq':
       case 'openai-compatible': {
         const openAiCfg = toOpenAiLike(cfg);
         this.logger.log(`LLM Provider: ${provider} (${openAiCfg.model})`);
-        return new OpenAICompatibleProvider(cfg, this.logger).configure(
-          openAiCfg,
-        );
+        return new OpenAICompatibleProvider(
+          cfg,
+          this.settings,
+          this.logger,
+        ).configure(openAiCfg);
       }
       default: {
         const unknownProvider: string = provider;
