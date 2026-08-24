@@ -91,13 +91,10 @@ export abstract class BaseLLMProvider {
       askOptions.maxTokens = this.config.LLM_MAX_TOKENS_COVER_LETTER;
     }
 
-    return this.ask(JSON.stringify(prompt), askOptions);
+    return this.ask(prompt, askOptions);
   }
 
-  protected buildAnalysisPrompt(
-    text: string,
-    candidate: Candidate,
-  ): AnalysisTemplate {
+  protected buildAnalysisPrompt(text: string, candidate: Candidate): string {
     const basePrompt = this.settings.aiInstructions.is_suitable;
     const projects = candidate.projects
       ? Object.values(candidate.projects)
@@ -108,19 +105,25 @@ export abstract class BaseLLMProvider {
           .join('\n')
       : 'Нет проектов';
 
-    return {
-      basePrompt,
-      vacancyDescription: text,
-      candidateExperienceSummary: candidate.experience_summary,
-      projects,
-    };
+    return `
+      ${basePrompt}
+
+      ## Текст вакансии
+      ${text}
+
+      ## Описание кандидата
+      ${candidate.experience_summary}
+
+      ## Проекты кандидата
+      ${projects}
+    `;
   }
 
   protected buildCoverLetterPrompt(
     vacancy: Vacancy,
     candidate: Candidate,
     additionalInstructions?: string,
-  ): CoverLetterTemplate {
+  ): string {
     const basePrompt = this.settings.aiInstructions.cover_letter;
     const projects = candidate.projects
       ? Object.values(candidate.projects)
@@ -137,13 +140,23 @@ export abstract class BaseLLMProvider {
       ? `\n\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ. ПРИОРИТЕТ!!!!: ${additionalInstructions}`
       : '';
 
-    return {
-      basePrompt,
-      vacancyTitle: vacancy.title,
-      vacancyDescription: vacancy.description,
-      candidateExperienceSummary: candidate.experience_summary,
-      projects,
-      additionalInstructions: instructions,
-    };
+    return `
+      ## Дополнительные инструкции (ПРИОРИТЕТ!)
+      ${instructions}
+
+      ${basePrompt}
+
+      ## Заголовок вакансии
+      ${vacancy.title}
+
+      ## Описание вакансии
+      ${vacancy.description}
+
+      ## Описание кандидата
+      ${candidate.experience_summary}
+
+      ## Проекты кандидата
+      ${projects}
+    `;
   }
 }
