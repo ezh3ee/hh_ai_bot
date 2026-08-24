@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { SettingsConfigService } from '../config/settings/settings-config.service';
 import { LlmModule } from '../llm/llm.module';
 import { LoggerModule } from '../logger/logger.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { TelegramModule } from '../telegram/telegram.module';
-import { VacancyService } from '../vacancy/vacancy.service';
+import { VacancyModule } from '../vacancy/vacancy.module';
 import { HhApplyService } from './services/hh-apply.service';
 import { HhAuthService } from './services/hh-auth.service';
 import { HhBrowserService } from './services/hh-browser.service';
@@ -17,7 +16,13 @@ import { HhSessionService } from './services/hh.session.service';
 import { VacancyFilterService } from './services/vacancy-filter.service';
 
 @Module({
-  imports: [LlmModule, PrismaModule, TelegramModule, LoggerModule],
+  imports: [
+    LlmModule,
+    PrismaModule,
+    TelegramModule,
+    LoggerModule,
+    VacancyModule,
+  ],
   providers: [
     HhEntryService,
     HhFlowService,
@@ -29,8 +34,6 @@ import { VacancyFilterService } from './services/vacancy-filter.service';
     HhApplyService,
     HhUserInteractionService,
     VacancyFilterService,
-    VacancyService,
-    SettingsConfigService,
   ],
 })
 export class HhModule {}

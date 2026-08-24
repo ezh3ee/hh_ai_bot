@@ -1,4 +1,3 @@
-import { Inject } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { OpenAI } from 'openai';
 import llmConfig, { OpenAiLike } from '../../config/llm.config';
@@ -14,7 +13,6 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
   private model: string | null = null;
 
   constructor(
-    @Inject(llmConfig.KEY)
     config: ConfigType<typeof llmConfig>,
     settings: SettingsConfigService,
     logger: LoggerService,
