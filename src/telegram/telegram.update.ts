@@ -36,7 +36,7 @@ export class TelegramUpdate {
   @On('callback_query:data')
   async onCallbackQuery(@Ctx() ctx: CallbackQueryContext<Context>) {
     // stop button animation once handling started
-    await ctx.answerCallbackQuery().catch(() => null);
+    // await ctx.answerCallbackQuery().catch(() => null);
     const data = ctx.callbackQuery.data;
     const chatId = extractChatId(ctx);
 

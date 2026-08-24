@@ -35,7 +35,7 @@ export class VacancyService {
         );
       }
 
-      return null;
+      throw e;
     }
   }
 
@@ -73,7 +73,7 @@ export class VacancyService {
         );
       }
 
-      return null;
+      throw e;
     }
   }
 }

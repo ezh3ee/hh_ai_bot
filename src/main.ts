@@ -4,4 +4,8 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   await NestFactory.createApplicationContext(AppModule);
 }
-void bootstrap();
+
+bootstrap().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

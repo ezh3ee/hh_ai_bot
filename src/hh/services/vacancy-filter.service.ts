@@ -17,7 +17,8 @@ export class VacancyFilterService {
 
     const lowerText = text.toLowerCase();
     for (const word of stopWords) {
-      const regex = new RegExp(`\\b${word.toLowerCase()}\\b`, 'i');
+      const escaped = word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escaped}\\b`, 'i');
       if (regex.test(lowerText)) {
         this.logger.log(`[Filter] Stop word found: "${word}"`);
         return true;
