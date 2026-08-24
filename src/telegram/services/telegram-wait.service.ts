@@ -2,6 +2,8 @@ import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import telegramConfig from '../../config/telegram.config';
 
+// TODO: перенести state в Redis в будущем
+
 type ActionType = 'SEND' | 'REJECT' | 'EDIT';
 
 interface ActionResult {
@@ -111,15 +113,4 @@ export class TelegramWaitService implements OnModuleDestroy {
     this.actionWaiters.clear();
     this.textWaiters.clear();
   }
-}
-
-interface Pending<T> {
-  resolve: (v: T) => void;
-  reject: (e: Error) => void;
-  timeout: NodeJS.Timeout;
-}
-
-interface ActionResult {
-  type: 'SEND' | 'REJECT' | 'EDIT';
-  vacancyId: number | null;
 }

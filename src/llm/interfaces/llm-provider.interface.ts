@@ -60,8 +60,13 @@ export abstract class BaseLLMProvider {
   async generateCoverLetter(
     vacancy: Vacancy,
     candidate: Candidate,
+    additionalInstructions?: string,
   ): Promise<string> {
-    const prompt = this.buildCoverLetterPrompt(vacancy, candidate);
+    const prompt = this.buildCoverLetterPrompt(
+      vacancy,
+      candidate,
+      additionalInstructions,
+    );
     const askOptions: AskOptions = {};
     if (this.config.LLM_TEMPERATURE_COVER_LETTER !== undefined) {
       askOptions.temperature = this.config.LLM_TEMPERATURE_COVER_LETTER;
@@ -69,6 +74,7 @@ export abstract class BaseLLMProvider {
     if (this.config.LLM_MAX_TOKENS_COVER_LETTER !== undefined) {
       askOptions.maxTokens = this.config.LLM_MAX_TOKENS_COVER_LETTER;
     }
+
     return this.ask(prompt, askOptions);
   }
 
@@ -77,26 +83,64 @@ export abstract class BaseLLMProvider {
     const projects = candidate.projects
       ? Object.values(candidate.projects)
           .map(
-            (p) => `- ${p.name} (${p.role}, ${p.stack.join(', ')}) — ${p.url}`,
+            (p) =>
+              `- ${p.name} (${p.role}, ${p.stack.join(', ')}) — ${p.url ?? 'ссылки нет'}`,
           )
           .join('\n')
       : 'Нет проектов';
-    return `${basePrompt}\n\nВАКАНСИЯ:\n${text}\nРезюме: ${candidate.experience_summary}\n\nМОИ ПРОЕКТЫ:\n${projects}`;
+
+    return `
+      ${basePrompt}
+
+      ## Текст вакансии
+      ${text}
+
+      ## Описание кандидата
+      ${candidate.experience_summary}
+
+      ## Проекты кандидата
+      ${projects}
+    `;
   }
 
   protected buildCoverLetterPrompt(
     vacancy: Vacancy,
     candidate: Candidate,
+    additionalInstructions?: string,
   ): string {
     const basePrompt = this.settings.aiInstructions.cover_letter;
     const projects = candidate.projects
       ? Object.values(candidate.projects)
           .map(
-            (p) => `- ${p.name} (${p.role}, ${p.stack.join(', ')}) — ${p.url}`,
+            (p) =>
+              `- Название: ${p.name}
+             (Моя роль в проекте: ${p.role}, Стэк: ${p.stack.join(', ')}, Период: ${p.period}, Тип работы: ${p.type}, Описание проекта: ${p.description},)
+              — ${p.url ?? 'ссылки нет'}`,
           )
           .join('\n')
       : 'Нет проектов';
 
-    return `${basePrompt}\n\nВАКАНСИЯ:\nНазвание: ${vacancy.title}\nОписание: ${vacancy.description}\nРезюме: ${candidate.experience_summary}\n\nМОИ ПРОЕКТЫ:\n${projects}`;
+    const instructions = additionalInstructions
+      ? `\n\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ. ПРИОРИТЕТ!!!!: ${additionalInstructions}`
+      : '';
+
+    return `
+      ## Дополнительные инструкции (ПРИОРИТЕТ!)
+      ${instructions}
+
+      ${basePrompt}
+
+      ## Заголовок вакансии
+      ${vacancy.title}
+
+      ## Описание вакансии
+      ${vacancy.description}
+
+      ## Описание кандидата
+      ${candidate.experience_summary}
+
+      ## Проекты кандидата
+      ${projects}
+    `;
   }
 }

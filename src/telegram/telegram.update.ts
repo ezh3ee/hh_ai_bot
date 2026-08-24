@@ -1,10 +1,10 @@
-import { Start, Update, On, Ctx } from '@grammyjs/nestjs';
+import { Ctx, On, Start, Update } from '@grammyjs/nestjs';
 import { Injectable } from '@nestjs/common';
-import { Context } from 'grammy';
 import type { CallbackQueryContext } from 'grammy';
-import { TelegramWaitService } from './services/telegram-wait.service';
-import { TelegramNotifyService } from './services/telegram-notify.service';
+import { Context } from 'grammy';
 import { parseCallbackData } from './schemas/callback.schema';
+import { TelegramNotifyService } from './services/telegram-notify.service';
+import { TelegramWaitService } from './services/telegram-wait.service';
 
 const actionTypeMap = {
   send: 'SEND' as const,
@@ -35,6 +35,8 @@ export class TelegramUpdate {
 
   @On('callback_query:data')
   async onCallbackQuery(@Ctx() ctx: CallbackQueryContext<Context>) {
+    // stop button animation once handling started
+    // await ctx.answerCallbackQuery().catch(() => null);
     const data = ctx.callbackQuery.data;
     const chatId = extractChatId(ctx);
 

@@ -1,4 +1,3 @@
-import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import llmConfig from '../../config/llm.config';
 import { SettingsConfigService } from '../../config/settings/settings-config.service';
@@ -9,13 +8,11 @@ import {
 } from '../interfaces/llm-provider.interface';
 import { isOllamaChatResponse } from '../ollama-response.schema';
 
-@Injectable()
 export class OllamaProvider extends BaseLLMProvider {
   private readonly url: string;
   private readonly model: string;
 
   constructor(
-    @Inject(llmConfig.KEY)
     config: ConfigType<typeof llmConfig>,
     settings: SettingsConfigService,
     logger: LoggerService,
@@ -45,10 +42,8 @@ export class OllamaProvider extends BaseLLMProvider {
           messages: [{ role: 'user', content: prompt }],
           stream: false,
           options: {
-            temperature:
-              options?.temperature ?? this.config.LLM_TEMPERATURE_ANALYSIS,
-            num_predict:
-              options?.maxTokens ?? this.config.LLM_MAX_TOKENS_ANALYSIS,
+            temperature: options?.temperature,
+            num_predict: options?.maxTokens,
           },
         }),
         signal: controller.signal,

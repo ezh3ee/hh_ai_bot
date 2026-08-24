@@ -5,15 +5,10 @@ import telegramConfig from '../config/telegram.config';
 import { TelegramUpdate } from './telegram.update';
 import { TelegramNotifyService } from './services/telegram-notify.service';
 import { TelegramWaitService } from './services/telegram-wait.service';
-import { LoggerService } from '../logger/logger.service';
+import { LoggerModule } from '../logger/logger.module';
 
 @Module({
-  providers: [
-    TelegramUpdate,
-    TelegramNotifyService,
-    TelegramWaitService,
-    LoggerService,
-  ],
+  providers: [TelegramUpdate, TelegramNotifyService, TelegramWaitService],
   imports: [
     NestjsGrammyModule.forRootAsync({
       inject: [telegramConfig.KEY],
@@ -21,6 +16,7 @@ import { LoggerService } from '../logger/logger.service';
         token: tgConfig.BOT_TOKEN,
       }),
     }),
+    LoggerModule,
   ],
   exports: [TelegramNotifyService, TelegramWaitService],
 })

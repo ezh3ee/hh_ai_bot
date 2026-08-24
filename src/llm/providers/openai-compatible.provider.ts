@@ -1,4 +1,3 @@
-import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { OpenAI } from 'openai';
 import llmConfig, { OpenAiLike } from '../../config/llm.config';
@@ -9,13 +8,11 @@ import {
   BaseLLMProvider,
 } from '../interfaces/llm-provider.interface';
 
-@Injectable()
 export class OpenAICompatibleProvider extends BaseLLMProvider {
   private client: OpenAI | null = null;
   private model: string | null = null;
 
   constructor(
-    @Inject(llmConfig.KEY)
     config: ConfigType<typeof llmConfig>,
     settings: SettingsConfigService,
     logger: LoggerService,
@@ -43,8 +40,8 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
     const completion = await this.client.chat.completions.create({
       model: this.model,
       messages: [{ role: 'user', content: prompt }],
-      temperature: options?.temperature ?? this.config.LLM_TEMPERATURE_ANALYSIS,
-      max_tokens: options?.maxTokens ?? this.config.LLM_MAX_TOKENS_ANALYSIS,
+      temperature: options?.temperature,
+      max_tokens: options?.maxTokens,
     });
 
     return completion.choices[0]?.message?.content ?? '';

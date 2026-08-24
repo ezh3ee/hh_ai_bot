@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, Vacancy } from '../generated/prisma/client';
 import { LoggerService } from '../logger/logger.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { AddVacancyByIdDto } from './dto/add-vacancy-by-id.dto.js';
+import { AddVacancyByIdDto } from './dto/add-vacancy-by-id.dto';
 
 @Injectable()
 export class VacancyService {
@@ -23,13 +23,9 @@ export class VacancyService {
           return null;
         }
 
-        this.logger.error(
-          `Prisma error adding vacancy ${vacancy.id}`,
-          e.message,
-          {
-            action: 'addVacancy',
-          },
-        );
+        this.logger.error(`Prisma error adding vacancy ${vacancy.id}`, e, {
+          action: 'addVacancy',
+        });
       } else {
         const errorMessage = e instanceof Error ? e.message : String(e);
         this.logger.error(
@@ -63,7 +59,7 @@ export class VacancyService {
           return null;
         }
 
-        this.logger.error(`Prisma error deleting vacancy ${id}`, e.message, {
+        this.logger.error(`Prisma error deleting vacancy ${id}`, e, {
           action: 'deleteVacancy',
         });
       } else {
@@ -77,7 +73,7 @@ export class VacancyService {
         );
       }
 
-      return null;
+      throw e;
     }
   }
 }

@@ -13,8 +13,14 @@ datasource db {
   provider = "sqlite"
 }
 
+enum VACANCY_REASON {
+  REJECTED
+  SENT
+}
+
 model Vacancy {
-  id        Int      @id // int потому что на hh.ru id вакансии - цифрами
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int            @id // int потому что на hh.ru id вакансии - цифрами
+  reason    VACANCY_REASON // причина попадания в базу 
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 }
