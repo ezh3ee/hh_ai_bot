@@ -9,22 +9,6 @@ export interface AskOptions {
   maxTokens?: number;
 }
 
-export type CoverLetterTemplate = {
-  basePrompt: string;
-  vacancyTitle: string;
-  vacancyDescription: string;
-  candidateExperienceSummary: string;
-  projects: string;
-  additionalInstructions: string;
-};
-
-export type AnalysisTemplate = {
-  basePrompt: string;
-  vacancyDescription: string;
-  candidateExperienceSummary: string;
-  projects: string;
-};
-
 export type LlmProviderConfig = ConfigType<typeof llmConfig>;
 
 export abstract class BaseLLMProvider {
@@ -51,7 +35,7 @@ export abstract class BaseLLMProvider {
         askOptions.maxTokens = this.config.LLM_MAX_TOKENS_ANALYSIS;
       }
 
-      const answer = await this.ask(JSON.stringify(prompt), askOptions);
+      const answer = await this.ask(prompt, askOptions);
 
       const cleaned = answer.trim().toUpperCase();
       if (cleaned === 'YES' || cleaned === 'NO') {
@@ -131,7 +115,7 @@ export abstract class BaseLLMProvider {
             (p) =>
               `- Название: ${p.name}
              (Моя роль в проекте: ${p.role}, Стэк: ${p.stack.join(', ')}, Период: ${p.period}, Тип работы: ${p.type}, Описание проекта: ${p.description},)
-              — ${p.url}`,
+              — ${p.url ?? 'ссылки нет'}`,
           )
           .join('\n')
       : 'Нет проектов';
