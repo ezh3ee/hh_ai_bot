@@ -102,7 +102,8 @@ export abstract class BaseLLMProvider {
     const projects = candidate.projects
       ? Object.values(candidate.projects)
           .map(
-            (p) => `- ${p.name} (${p.role}, ${p.stack.join(', ')}) — ${p.url}`,
+            (p) =>
+              `- ${p.name} (${p.role}, ${p.stack.join(', ')}) — ${p.url ?? 'ссылки нет'}`,
           )
           .join('\n')
       : 'Нет проектов';
