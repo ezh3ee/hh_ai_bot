@@ -1,98 +1,413 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <img src="./logo.png" width="300" alt="HeadHunter AI Bot" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# HeadHunter AI Bot
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**Полноценный AI-пайплайн для поиска работы**
 
-## Description
+Приложение `HH AI Bot` автоматически ищет вакансии на [HH.ru](https://hh.ru), анализирует их с помощью ИИ, генерирует сопроводительное письмо, показывает результат в Telegram и отправляет отклик с AI-сгенерированным сопроводительным письмом **только после подтверждения пользователем**.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+> Проект построен как полноценное NestJS-приложение с разделением ответственности между парсером, LLM-провайдерами, Telegram-интерфейсом, бизнес-логикой вакансий и браузерной автоматизацией.
 
-## Project setup
+---
 
-```bash
-$ npm install
+## Как это работает
+
+```text
+┌──────────────┐
+│    HH.ru     │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│  Playwright  │
+│    Crawler   │
+│(CloakBrowser)│
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│   Вакансия   │
+└──────┬───────┘
+       │
+  уже обработана?
+    /         \
+  да           нет
+  │             │
+пропустить      ▼
+        ┌──────────────┐
+        │      ИИ      │
+        │    анализ    │
+        └──────┬───────┘
+               │
+          подходит?
+        /        \
+    нет           │
+(сохранить в бд)  ▼
+      ┌─────────────────────┐
+      │      Telegram       │
+      │                     │
+      │  Сопроводительное   │
+      │      письмо         │
+      │                     │
+      │ [Откликнуться]      │
+      │ [Отклонить]         │
+      │ [Редактировать]     │
+      └──────┬──────────────┘
+             │
+        ┌──────┴──────┐
+        │             │
+    Отклонить    Редактировать
+(сохранить в бд)      │
+                      ▼
+                      ИИ
+                      │
+          Дополнительные инструкции
+                      │
+                      ▼
+            Обновленное письмо
+                      │
+                      ▼
+                  Telegram
+                [Откликнуться]
+                      │
+                      ▼
+                    ОТКЛИК
+                (сохранить в бд)
 ```
 
-## Compile and run the project
+### Основной pipeline
 
-```bash
-# development
-$ npm run start
+1. Парсер сканирует [HH.ru](https://hh.ru) по заданным поисковым запросам, регионам и параметрам.
+2. Каждая вакансия проверяется в базе. Уже обработанные вакансии повторно не рассматриваются.
+3. Вакансия проходит первичный фильтр стоп-слов.
+4. Новая вакансия передаётся в ИИ для анализа.
+5. Если вакансия подходит кандидату, она отправляется в Telegram.
+6. Пользователь получает информацию о вакансии и самостоятельно принимает решение (отправить, отклонить или редактировать).
+7. Если пользователь выбирает "редактировать", он отправляет сообщение с дополнительными инструкциями и ИИ переписывает сопровоидительное письмо.
+8. При нажатии на "откликнуться", скрипт отправляет отклик (можно тестировать без откликов в режиме `TEST_MODE`).
+9. Результат сохраняется в базу данных.
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
+## Что получает пользователь в Telegram
+
+Пример сообщения:
+
+```text
+Найдена вакансия: TypeScript-разработчик (backend)
+
+📍 Формат работы: удалённо
+💰 от 210 000 ₽ за месяц,  на руки
+
+Приветствую. Заинтересовала вакансия Backend Node.js Developer.
+Имею практический опыт разработки серверных приложений на Node.js с использованием NestJS и TypeScript,
+создавал и поддерживал REST‑API, работал с PostgreSQL и MongoDB,
+а также контейнеризировал сервисы с помощью Docker.
+
+В проектах использовал Redis в связке с BullMQ для организации очередей задач,
+понимаю, как его можно применять и для кэширования или управления сессиями.
+Fastify пока не использовал, но готов быстро освоить его в рамках ваших задач.
+Знаком с принципами ООП, SOLID, DRY, KISS,
+а также слышал о CQRS и Event Sourcing, готов применять их при необходимости.
+
+Открыт к удалённой работе с гибким графиком
+и с удовольствием присоединюсь к вашей команде.
+
+[✅ Отправить] [❌ Отклонить]
+[✏️ Редактировать]
 ```
 
-## Run tests
+После подтверждения бот переходит к отправке отклика.
 
-```bash
-# unit tests
-$ npm run test
+---
 
-# e2e tests
-$ npm run test:e2e
+## Важный момент
 
-# test coverage
-$ npm run test:cov
+**⚠️ Анкеты работодателя обрабатываются вручную. Браузер намеренно запускается не в headless-режиме.**.
+
+Если бот сообщает:
+
+```text
+⚠️ Есть анкета — проверьте перед отправкой!
 ```
 
-## Deployment
+это означает, что на странице вакансии присутствует анкета работодателя, которую необходимо заполнить вручную.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+В этот момент:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. Откройте браузер, запущенный приложением.
+2. Перейдите к анкете.
+3. Заполните её вручную.
+4. **Не заполняйте поле сопроводительного письма** — его бот обработает самостоятельно.
+5. Нажмите кнопку **"Откликнуться"** в **TELEGRAM боте**.
+6. Дальше приложение продолжит автоматическую обработку.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+Браузер запускается не в `headless-режиме` именно для того, чтобы пользователь мог взаимодействовать с такими анкетами.
+
+---
+
+# Основные возможности
+
+- Автоматический поиск вакансий на HH.ru
+- Поддержка множества поисковых запросов и регионов
+- Возможность добавления стоп-слов
+- ИИ-Анализ вакансий
+- Сопроводительные письма сгенерированные ИИ
+- Управление через Telegram
+- `TEST_MODE` для безопасного тестирования без реальных откликов
+- OpenAI-совместимый LLM Api
+
+---
+
+# Стек
+
+|                    |                                                        |
+| ------------------ | ------------------------------------------------------ |
+| Backend            | NestJS / TypeScript                                    |
+| Browser automation | Playwright / CloakBrowser                              |
+| Telegram           | Grammy / `@grammyjs/nestjs`                            |
+| Database           | SQLite                                                 |
+| ORM                | Prisma                                                 |
+| Validation         | Zod                                                    |
+| LLM                | Ollama / Groq / OpenRouter / Polza / OpenAI-compatible |
+| Configuration      | `.env` / `settings.yml`                                |
+
+---
+
+## LLM Module
+
+Присутствует поддержка нескольких вариантов LLM-провайдеров, как локальных, так и облачных:
+
+```text
+Ollama
+OpenRouter
+Groq
+Polza
+OpenAI-compatible
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+# Бесплатная настройка LLM через Groq
 
-Check out a few resources that may come in handy when working with NestJS:
+Для локального запуска **не обязательно устанавливать локальную LLM** и не обязательно платить за API.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Для этого проекта можно использовать [Groq](https://groq.com/).
 
-## Support
+**❗️ Важно: Не путайте `Groq` и `Grok`. Groq — это отдельный сервис, не связанный с xAI Grok (x.com, twitter).**
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Для использования этого проекта можно начать с **бесплатного тарифа** Groq.
 
-## Stay in touch
+## Настройка
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 1. Создайте аккаунт Groq
 
-## License
+Зайдите на сайт [Groq](https://groq.com/) и зарегистрируйтесь.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Для регистрации рекомендуется использовать Gmail: в некоторых случаях другие почтовые домены может фродить.
+
+Так как у самого Groq заблокирован доступ с территории РФ, потребуется VPN.
+
+### 2. Создайте API key
+
+В Groq Console создайте новый API key и скопируйте его.
+
+### 3. Выберите модель
+
+В проекте по умолчанию используется:
+
+```env
+openai/gpt-oss-120b
+```
+
+Поэтому отдельно указывать модель не обязательно.
+
+### 4. Добавьте настройки в `.env`
+
+```env
+LLM_PROVIDER="groq"
+GROQ_API_KEY="ваш_api_ключ"
+```
+
+Готово.
+
+Не обязательно:
+
+- разворачивать локальную модель на ollama или LMStudio;
+- скачивать модели;
+- оплачивать API для использования проекта.
+
+---
+
+# Настройка
+
+Перед запуском создайте `.env` на основе `.env.example`.
+
+Также необходимо настроить `settings.yml` на примере `settings-example.yml`.
+
+В нём находятся:
+
+- данные кандидата;
+- параметры поиска HH.ru;
+- ИИ инструкции;
+- промпты для анализа вакансий;
+- промпт для генерации сопроводительного письма.
+
+---
+
+# Установка
+
+## Требования
+
+- Node.js
+- npm
+- Chromium / браузер, устанавливаемый Playwright
+- Установленный CloakBrowser
+- аккаунт HH.ru
+- Telegram Bot Token
+- LLM provider API key
+
+`Docker` в текущей версии **не используется**, поскольку приложение требует пользовательского взаимодействия с браузером при обработке вакансий с анкетами.
+
+---
+
+## 1. Клонирование репозитория
+
+```bash
+git clone https://github.com/ezh3ee/hh_ai_bot.git
+cd hh_ai_bot
+```
+
+## 2. Установка зависимостей
+
+```bash
+npm install
+```
+
+## 3. Установка Playwright
+
+```bash
+npx playwright install
+```
+
+## 4. Настройка переменных окружения
+
+```bash
+cp .env.example .env
+```
+
+Заполните необходимые переменные окружения.
+
+## 5. Настройка профиля
+
+```bash
+cp settings-example.yml settings.yml
+```
+
+Настройте `settings.yml`.
+
+Здесь задаются:
+
+- данные кандидата;
+- поисковые параметры;
+- регионы;
+- ИИ промпты.
+
+## 6. Инициализация Prisma
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
+## 7. Запуск приложения
+
+```bash
+npm run start:dev
+```
+
+---
+
+# Безопасное тестирование
+
+Перед реальной отправкой откликов рекомендуется использовать:
+
+```env
+TEST_MODE="true"
+```
+
+В этом режиме приложение выполняет весь pipeline, но **не отправляет реальные отклики на HH.ru**.
+
+После проверки можно переключить:
+
+```env
+TEST_MODE="false"
+```
+
+---
+
+# База данных
+
+SQLite используется для хранения истории обработки вакансий.
+
+Система сохраняет обработанные вакансии, чтобы одна и та же вакансия не обрабатывалась повторно.
+Также присутствует первичный фильтр из стоп-слов, чтобы сократить количество запросов к модели.
+
+В зависимости от результата обработки сохраняется причина:
+
+```text
+REJECTED
+SENT
+```
+
+Это позволяет отслеживать историю вакансий и предотвращать дублирование откликов.
+
+---
+
+# Особенности архитектуры
+
+Особое внимание уделено:
+
+- модульности;
+- Dependency Injection;
+- разделению ответственности;
+- расширяемости LLM-интеграции;
+- runtime валидация;
+- безопасной обработке внешних данных;
+- предотвращению повторной обработки вакансий.
+
+---
+
+# Roadmap
+
+- [x] Парсинг HH.ru
+- [x] Первичный анализ по стоп-словам
+- [x] Глобукий анализ вакансий через ИИ
+- [x] Генерация сопроводительных писем
+- [x] Управление пользователем через Telegram бота
+- [x] Сохранение обработанных вакансий в базу данных
+- [x] Защита от дублей
+- [x] Автоматическая отправка откликов
+- [x] `TEST_MODE`
+- [x] Поддержка нескольких LLM-провайдеров
+- [ ] Полностью автоматическая обработка анкет
+- [ ] Статистика и отчёты по откликам
+- [ ] Контейнеризация
+- [ ] Возможность деплоя на VPS и облачные сервисы
+
+---
+
+# Disclaimer и основная цель проекта.
+
+Основная цель - создать сервис, который облегчает процес поиска работы в IT (и не только) в текущих реалиях рынка при минимальных затратах 😄
+
+⚠️⚠️⚠️⚠️ВНИМАНИЕ⚠️⚠️⚠️⚠️
+
+Неофициальная автоматизация поиска работы и откликов на [hh.ru](https://hh.ru) запрещена условиями [Пользовательского соглашения](https://hh.ru/article/agreement)
+
+Проект предназначен для образовательных и исследовательских целей.
+Используйте его на свой страх и риск.
+
+---
