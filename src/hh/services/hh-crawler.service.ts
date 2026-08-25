@@ -187,14 +187,20 @@ export class HhCrawlerService {
         this.elementConfig.HH_DETAILED_VACANCY_DESCRIPTION,
       );
 
+      const location = await this.safeGetText(
+        page,
+        this.elementConfig.HH_DETAILED_VACANCY_LOCATION,
+      );
+
       return {
         id: String(vacancyId),
         title,
         company: companyName,
         description,
         url: page.url(),
-        salary: salary || undefined,
-        location: workFormat || undefined,
+        salary: salary,
+        workFormat: workFormat,
+        location: location,
       };
     } catch (error) {
       this.logger.error(

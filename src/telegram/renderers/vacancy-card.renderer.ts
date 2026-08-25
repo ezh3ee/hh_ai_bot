@@ -6,6 +6,7 @@ export interface VacancyCardData {
   title: string;
   url: string;
   workFormat?: string;
+  location?: string;
   salary?: string;
   coverLetter?: string;
   hasQuestionnaire?: boolean;
@@ -33,7 +34,8 @@ export function renderVacancyCard(data: VacancyCardData): RenderedCard {
     `<b>Найдена вакансия:</b> <a href="${escapeHtml(data.url)}">${escapeHtml(data.title)}</a>`,
   ];
 
-  if (data.workFormat) lines.push(`📍 ${escapeHtml(data.workFormat)}`);
+  if (data.workFormat) lines.push(`🕓 ${escapeHtml(data.workFormat)}`);
+  if (data.location) lines.push(`📍 ${escapeHtml(data.location)}`);
   if (data.salary) lines.push(`💰 ${escapeHtml(data.salary)}`);
   if (data.coverLetter) lines.push(escapeHtml(data.coverLetter));
   if (data.hasQuestionnaire)
@@ -46,7 +48,7 @@ export function renderVacancyCard(data: VacancyCardData): RenderedCard {
     .text('✏️ Редактировать', `edit_${data.id}`);
 
   return {
-    text: lines.join('\n'),
+    text: lines.join('\n\n'),
     parse_mode: 'HTML',
     reply_markup: keyboard,
   };
