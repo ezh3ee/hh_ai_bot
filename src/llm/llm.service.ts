@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   AskOptions,
   BaseLLMProvider,
@@ -7,12 +7,10 @@ import { LLMFactory } from './llm.factory';
 import { Candidate, Vacancy } from './llm.types';
 
 @Injectable()
-export class LLMService implements OnModuleInit {
-  private provider!: BaseLLMProvider;
+export class LLMService {
+  private readonly provider: BaseLLMProvider;
 
-  constructor(private readonly factory: LLMFactory) {}
-
-  onModuleInit() {
+  constructor(private readonly factory: LLMFactory) {
     this.provider = this.factory.create();
   }
 

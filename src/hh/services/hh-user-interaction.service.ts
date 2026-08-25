@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
-import { Locator, Page } from 'playwright';
+import { Page } from 'playwright';
 import hhConfig, { type HhConfig } from '../../config/hh.config';
 import hhElementsConfig from '../../config/hh.elements.config';
 import telegramConfig from '../../config/telegram.config';
@@ -36,7 +36,14 @@ export class HhUserInteractionService {
     let messageId: number | null = null;
     let hasQuestionnaire = false;
 
-    const vacancyId = parseInt(vacancyData.id ? vacancyData.id : '0', 10);
+    const vacancyId = parseInt(vacancyData.id ?? '', 10);
+    if (!Number.isInteger(vacancyId) || vacancyId <= 0) {
+      this.logger.error(
+        `[Interaction] Invalid or missing vacancyId in vacancy data`,
+        new Error(`Expected numeric id, got: "${vacancyData.id}"`),
+      );
+      return { action: 'TIMEOUT', coverLetter: '' };
+    }
 
     await this.openResponsePage(page, vacancyId);
     await page.waitForLoadState('domcontentloaded');
@@ -62,13 +69,9 @@ export class HhUserInteractionService {
         additionalInstructions,
       );
 
-      let additionalForm: Locator | null = null;
-
-      additionalForm = page.locator(this.elementConfig.HH_IS_ADDITIONAL_FORM);
-
-      hasQuestionnaire = additionalForm
-        ? (await additionalForm.count()) > 0
-        : false;
+      hasQuestionnaire =
+        (await page.locator(this.elementConfig.HH_IS_ADDITIONAL_FORM).count()) >
+        0;
 
       cardData = {
         id: vacancyId,
@@ -205,7 +208,7 @@ export class HhUserInteractionService {
   private async openResponsePage(page: Page, vacancyId: number): Promise<void> {
     if (!vacancyId) {
       this.logger.error(
-        `[Intercation] Could not extract vacancyId from URL`,
+        `[Interaction] Could not extract vacancyId from URL`,
         new Error('vacancyId not found in URL'),
       );
       return;

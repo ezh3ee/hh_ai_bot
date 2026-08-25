@@ -21,9 +21,8 @@ export class OllamaProvider extends BaseLLMProvider {
     if (config.LLM_PROVIDER !== 'ollama') {
       throw new Error('OllamaProvider requires LLM_PROVIDER=ollama');
     }
-    const ollamaConfig = config;
-    this.url = ollamaConfig.OLLAMA_BASE_URL;
-    this.model = ollamaConfig.OLLAMA_MODEL;
+    this.url = config.OLLAMA_BASE_URL;
+    this.model = config.OLLAMA_MODEL;
   }
 
   async ask(prompt: string, options?: AskOptions): Promise<string> {
