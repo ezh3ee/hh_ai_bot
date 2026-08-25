@@ -107,26 +107,21 @@ export class HhPageNavigatorService {
         timeout: this.hhConfig.HH_PAGINATION_TIMEOUT_MS,
       });
 
-      const totalPages2 = page.locator(
-        this.elementConfig.HH_LIST_TOTAL_PAGES_2,
-      );
-      if (await totalPages2.count()) {
-        const text = await totalPages2.textContent();
-        const parsed = parseInt(text?.trim() ?? '', 10);
-        if (!isNaN(parsed) && parsed > 0) {
-          this.logger.log(`[Navigator] Total pages (method 2): ${parsed}`);
-          return parsed;
-        }
-      }
+      const totalPagesLocators = [
+        this.elementConfig.HH_LIST_TOTAL_PAGES_ARROW,
+        this.elementConfig.HH_LIST_TOTAL_PAGES_NUMERIC,
+      ];
 
-      const totalPages1 = page.locator(
-        this.elementConfig.HH_LIST_TOTAL_PAGES_1,
-      );
-      if (await totalPages1.count()) {
-        const text = await totalPages1.textContent();
+      for (const selector of totalPagesLocators) {
+        const locator = page.locator(selector);
+        if (!(await locator.count())) {
+          continue;
+        }
+
+        const text = await locator.textContent();
         const parsed = parseInt(text?.trim() ?? '', 10);
         if (!isNaN(parsed) && parsed > 0) {
-          this.logger.log(`[Navigator] Total pages (method 1): ${parsed}`);
+          this.logger.log(`[Navigator] Total pages: ${parsed}`);
           return parsed;
         }
       }

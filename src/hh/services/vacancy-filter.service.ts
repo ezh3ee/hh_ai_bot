@@ -15,14 +15,13 @@ export class VacancyFilterService {
       return false;
     }
 
-    const lowerText = text.toLowerCase();
     for (const word of stopWords) {
-      const escaped = word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(
         `(?<![\\p{L}\\p{N}_])${escaped}(?![\\p{L}\\p{N}_])`,
         'iu',
       );
-      if (regex.test(lowerText)) {
+      if (regex.test(text)) {
         this.logger.log(`[Filter] Stop word found: "${word}"`);
         return true;
       }
