@@ -50,6 +50,7 @@ export class HhUserInteractionService {
       url: string;
       workFormat: string | undefined;
       salary: string | undefined;
+      location: string | undefined;
       coverLetter: string;
       hasQuestionnaire: boolean;
     } | null = null;
@@ -73,7 +74,8 @@ export class HhUserInteractionService {
         id: vacancyId,
         title: vacancyData.title,
         url: vacancyData.url,
-        workFormat: vacancyData.location,
+        workFormat: vacancyData.workFormat,
+        location: vacancyData.location,
         salary: vacancyData.salary,
         coverLetter,
         hasQuestionnaire,

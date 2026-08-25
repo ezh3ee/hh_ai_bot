@@ -6,6 +6,7 @@ export interface Vacancy {
   url: string;
   salary?: string;
   location?: string;
+  workFormat?: string;
 }
 
 export interface Candidate {

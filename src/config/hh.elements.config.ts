@@ -17,6 +17,7 @@ const hhElementsConfigSchema = z.object({
   HH_DETAILED_VACANCY_TITLE: z.string(),
   HH_DETAILED_SALARY: z.string(),
   HH_DETAILED_EXPERIENCE: z.string(),
+  HH_DETAILED_VACANCY_LOCATION: z.string(),
   HH_DETAILED_WORK_FORMAT: z.string(),
   HH_DETAILED_VACANCY_DESCRIPTION: z.string(),
   HH_IS_ADDITIONAL_FORM: z.string(),
