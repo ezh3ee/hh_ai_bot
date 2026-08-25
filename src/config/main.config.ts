@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { z, ZodError } from 'zod';
+import { formatZodIssues } from './validation/format-zod-error';
 
 const mainConfigSchema = z.object({
   HH_HEADLESS: z.coerce.boolean().default(false),
@@ -16,7 +17,9 @@ export default registerAs('app', (): MainConfig => {
     data = mainConfigSchema.parse(process.env);
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new Error(`[MAIN Config]: Validation failed - ${error.message}`);
+      throw new Error(
+        `[MAIN Config]: Validation failed - ${formatZodIssues(error)}`,
+      );
     }
 
     throw error;
