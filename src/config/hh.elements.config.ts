@@ -1,5 +1,7 @@
 import { registerAs } from '@nestjs/config';
 import { z, ZodError } from 'zod';
+import { settingsLoader } from './loader/yml-file.loader';
+import { formatZodIssues } from './validation/format-zod-error';
 
 const hhElementsConfigSchema = z.object({
   HH_PROFILE_ICON_DESKTOP: z.string(),
@@ -34,14 +36,15 @@ const hhElementsConfigSchema = z.object({
 export type HhElementsConfig = z.infer<typeof hhElementsConfigSchema>;
 
 export default registerAs('hhelements', (): HhElementsConfig => {
+  const ymlData = settingsLoader('elements');
   let data: HhElementsConfig;
 
   try {
-    data = hhElementsConfigSchema.parse(process.env);
+    data = hhElementsConfigSchema.parse(ymlData);
   } catch (error) {
     if (error instanceof ZodError) {
       throw new Error(
-        `[HHELEMENTS Config]: Validation failed - ${error.message}`,
+        `[HHELEMENTS Config]: Validation failed - ${formatZodIssues(error)}`,
       );
     }
 

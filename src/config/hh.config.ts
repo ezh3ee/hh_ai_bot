@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { z, ZodError } from 'zod';
+import { formatZodIssues } from './validation/format-zod-error';
 
 const hhConfigSchema = z.object({
   HH_MAIN_URL: z.string(),
@@ -18,7 +19,9 @@ export default registerAs('hh', (): HhConfig => {
     data = hhConfigSchema.parse(process.env);
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new Error(`[HH Config]: Validation failed - ${error.message}`);
+      throw new Error(
+        `[HH Config]: Validation failed - ${formatZodIssues(error)}`,
+      );
     }
 
     throw error;

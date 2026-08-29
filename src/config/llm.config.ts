@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { z, ZodError } from 'zod';
+import { formatZodIssues } from './validation/format-zod-error';
 
 const CommonFields = z.object({
   LLM_TEMPERATURE_ANALYSIS: z.coerce.number().min(0).max(2).optional(),
@@ -112,7 +113,9 @@ export default registerAs('llm', (): LlmConfig => {
     data = llmConfigSchema.parse(process.env);
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new Error(`[LLM Config]: Validation failed - ${error.message}`);
+      throw new Error(
+        `[LLM Config]: Validation failed - ${formatZodIssues(error)}`,
+      );
     }
     throw error;
   }
